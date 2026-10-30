@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações — Lívia Copilot (ConectWeb)</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand">
+        <div class="logo">✨</div>
+        <div>
+          <h1>Lívia Copilot — Configurações</h1>
+          <p class="subtitle">Personalize a inteligência artificial da Lívia para a sua empresa e redes sociais.</p>
+        </div>
+      </div>
+      <div class="header-badge">ConectWeb Inteligência</div>
+    </header>
+
+    <main class="content">
+      <!-- Seção 1: Conexão com a API da Lívia -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🔑 Conexão com o Servidor da Lívia</h2>
+          <span class="card-tag">livia.conectweb.online</span>
+        </div>
+        <p class="card-desc">Conecte a extensão ao seu servidor oficial da Lívia para usar seu modelo de IA e prompts personalizados.</p>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="liviaApiUrl">URL Base da API da Lívia:</label>
+            <input type="text" id="liviaApiUrl" placeholder="https://livia.conectweb.online/api">
+            <small>Endpoint onde roda o backend da Lívia da ConectWeb.</small>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="liviaApiToken">Token Secreto de Acesso (Bearer Token):</label>
+            <input type="password" id="liviaApiToken" placeholder="Insira o token de segurança da Lívia">
+            <small>Chave configurada no arquivo de ambiente da Lívia (ex: LIVIA_API_SECRET).</small>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button type="button" class="btn btn-secondary" id="btn-test-connection">
+            <span>⚡</span> Testar Conexão com a Lívia
+          </button>
+          <span id="connection-status" class="status-msg"></span>
+        </div>
+      </section>
+
+      <!-- Seção 2: Contexto da Empresa para SEO Local -->
+      <section class="card">
+        <div class="card-header">
+          <h2>📍 Contexto da Empresa (SEO Local)</h2>
+          <span class="card-tag">Google Meu Negócio</span>
+        </div>
+        <p class="card-desc">Essas informações são usadas pela Lívia para injetar palavras-chave de localização nos posts e respostas a avaliações.</p>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="companyName">Nome da Empresa / Estabelecimento:</label>
+            <input type="text" id="companyName" placeholder="Ex: ConectWeb Soluções Digitais">
+          </div>
+
+          <div class="form-group">
+            <label for="companyNiche">Segmento / Ramo de Atuação:</label>
+            <input type="text" id="companyNiche" placeholder="Ex: Pizzaria Artesanal, Clínica Médica, Loja de Roupas">
+          </div>
+
+          <div class="form-group">
+            <label for="companyCity">Cidade Principal:</label>
+            <input type="text" id="companyCity" placeholder="Ex: Bauru">
+          </div>
+
+          <div class="form-group">
+            <label for="companyNeighborhood">Bairro Principal / Região:</label>
+            <input type="text" id="companyNeighborhood" placeholder="Ex: Centro / Altos da Cidade">
+          </div>
+
+          <div class="form-group">
+            <label for="companyWhatsapp">WhatsApp Comercial com DDD:</label>
+            <input type="text" id="companyWhatsapp" placeholder="Ex: 5514996988997">
+          </div>
+
+          <div class="form-group">
+            <label for="toneOfVoice">Tom de Voz da IA:</label>
+            <select id="toneOfVoice">
+              <option value="amigavel">Amigável, Acolhedor e Prestativo (Padrão)</option>
+              <option value="profissional">Profissional, Técnico e Formal</option>
+              <option value="persuasivo">Persuasivo, Comercial e com Foco em Vendas</option>
+              <option value="direto">Curto, Direto e Objetivo</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seção 3: Canais e Provedores Habilitados -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🌐 Canais de Redes Sociais</h2>
+          <span class="card-tag">Multi-Plataforma</span>
+        </div>
+        <p class="card-desc">Gerencie onde a Lívia injeta os botões de ação e conversão.</p>
+
+        <div class="channels-list">
+          <div class="channel-item">
+            <div class="channel-info">
+              <span class="channel-icon">📍</span>
+              <div>
+                <strong>Google Meu Negócio / Maps</strong>
+                <p>Respostas automáticas a avaliações e criador de posts locais.</p>
+              </div>
+            </div>
+            <span class="badge badge-active">Ativo</span>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-info">
+              <span class="channel-icon">📸</span>
+              <div>
+                <strong>Instagram Web</strong>
+                <p>Botão flutuante para capturar legenda e fotos e transformar em post do Google.</p>
+              </div>
+            </div>
+            <span class="badge badge-active">Ativo</span>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-info">
+              <span class="channel-icon">👥</span>
+              <div>
+                <strong>Facebook Web</strong>
+                <p>Captura de posts de páginas para republicação local.</p>
+              </div>
+            </div>
+            <span class="badge badge-active">Ativo</span>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-info">
+              <span class="channel-icon">💼</span>
+              <div>
+                <strong>LinkedIn</strong>
+                <p>Conversão de posts para o tom profissional B2B.</p>
+              </div>
+            </div>
+            <span class="badge badge-pending">Pronto para Ativar</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Botão Salvar -->
+      <div class="save-bar">
+        <button type="button" class="btn btn-primary" id="btn-save">
+          <span>💾</span> Salvar Todas as Configurações
+        </button>
+        <span id="save-msg" class="status-msg"></span>
+      </div>
+    </main>
+  </div>
+
+  <script src="../lib/livia-api.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

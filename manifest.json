@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": "Lívia Copilot — SEO Local & Redes Sociais (ConectWeb)",
+  "version": "1.0.0",
+  "description": "Conecte Instagram, Facebook e Google Meu Negócio à inteligência artificial da Lívia da ConectWeb. Responda avaliações e crie posts locais em 1 clique.",
+  "author": "ConectWeb",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Lívia Copilot - ConectWeb",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "https://business.google.com/*",
+    "https://*.google.com/*",
+    "https://*.instagram.com/*",
+    "https://*.facebook.com/*",
+    "https://livia.conectweb.online/*",
+    "https://conectweb.online/*",
+    "http://localhost:*/*"
+  ],
+  "background": {
+    "service_worker": "scripts/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://business.google.com/*",
+        "https://www.google.com/search*",
+        "https://www.google.com.br/search*"
+      ],
+      "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-gbp.js"],
+      "css": ["scripts/content-style.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.instagram.com/*"
+      ],
+      "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-instagram.js"],
+      "css": ["scripts/content-style.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.facebook.com/*"
+      ],
+      "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-facebook.js"],
+      "css": ["scripts/content-style.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "scripts/content-style.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

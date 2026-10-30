@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lívia Copilot</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-badge">✨</div>
+        <div class="brand-text">
+          <h1>Lívia Copilot</h1>
+          <span class="subtext">ConectWeb Inteligência</span>
+        </div>
+      </div>
+      <div class="status-indicator" id="status-badge" title="Status da Conexão com a Lívia">
+        <span class="dot"></span>
+        <span class="status-label">Online</span>
+      </div>
+    </header>
+
+    <!-- Context Card -->
+    <div class="context-card">
+      <div class="card-row">
+        <span class="card-label">Empresa:</span>
+        <span class="card-value" id="display-company">Carregando...</span>
+      </div>
+      <div class="card-row">
+        <span class="card-label">Local:</span>
+        <span class="card-value" id="display-location">Carregando...</span>
+      </div>
+      <div class="card-row">
+        <span class="card-label">Conexões:</span>
+        <span class="channels-tags">
+          <span class="tag tag-active">Google Maps</span>
+          <span class="tag tag-active">Instagram</span>
+          <span class="tag tag-active">Facebook</span>
+          <span class="tag tag-future" title="Em breve">+ LinkedIn</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick Tools -->
+    <div class="quick-tools">
+      <h2>Ações Rápidas</h2>
+      <div class="tools-grid">
+        <button class="tool-btn" id="btn-open-gbp">
+          <span class="tool-icon">📍</span>
+          <span>Google Meu Negócio</span>
+        </button>
+        <button class="tool-btn" id="btn-open-insta">
+          <span class="tool-icon">📸</span>
+          <span>Instagram Web</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick AI Playground -->
+    <div class="playground">
+      <h2>Gerador Rápido Lívia</h2>
+      <div class="input-group">
+        <select id="quick-action-type">
+          <option value="review">💬 Responder Avaliação</option>
+          <option value="post">📝 Criar Post de SEO Local</option>
+          <option value="repurpose">🔄 Transformar Legenda de Rede</option>
+        </select>
+      </div>
+
+      <textarea id="quick-input" placeholder="Cole a avaliação do cliente ou a legenda do post..."></textarea>
+
+      <button class="primary-btn" id="btn-generate">
+        <span>✨</span>
+        <span>Gerar com a Lívia</span>
+      </button>
+
+      <div class="result-box" id="result-box" style="display: none;">
+        <div class="result-header">
+          <span>Resultado da Lívia:</span>
+          <button class="copy-btn" id="btn-copy">Copiar</button>
+        </div>
+        <div class="result-text" id="result-text"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <a href="#" id="link-options">⚙️ Configurações & API Lívia</a>
+      <span class="version">v1.0.0</span>
+    </footer>
+  </div>
+
+  <script src="../lib/providers.js"></script>
+  <script src="../lib/livia-api.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
