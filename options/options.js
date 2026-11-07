@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bizPrimaryCategoryInput = document.getElementById('bizPrimaryCategory');
   const bizCityInput = document.getElementById('bizCity');
   const bizNeighborhoodInput = document.getElementById('bizNeighborhood');
+  const bizAddressInput = document.getElementById('bizAddress');
+  const bizPostalCodeInput = document.getElementById('bizPostalCode');
+  const bizPlaceIdInput = document.getElementById('bizPlaceId');
   const bizServiceAreasInput = document.getElementById('bizServiceAreas');
   const bizServicesInput = document.getElementById('bizServices');
   const bizKeywordsInput = document.getElementById('bizKeywords');
@@ -109,7 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
 
         <div class="biz-card-info">
-          <span>📍 ${biz.city} (${biz.neighborhood})</span>
+          <span>📍 ${biz.city || 'Sem cidade'}${biz.neighborhood ? ' (' + biz.neighborhood + ')' : ''}${biz.address ? ' • ' + biz.address : ''}</span>
+          ${biz.googlePlaceId ? `<span style="font-size: 10px; color: #38bdf8;">🆔 PlaceID: ${biz.googlePlaceId}</span>` : ''}
           <span>📲 ${biz.whatsapp || 'Sem WhatsApp'}</span>
           <span>🎭 Tom: ${biz.toneOfVoice || 'amigavel'}</span>
         </div>
@@ -158,6 +162,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     onboardingFormTitle.innerText = '➕ Onboarding de Empresa / Cliente';
     btnCancelEdit.style.display = 'none';
     bizSaveMsg.innerText = '';
+    if (bizAddressInput) bizAddressInput.value = '';
+    if (bizPostalCodeInput) bizPostalCodeInput.value = '';
+    if (bizPlaceIdInput) bizPlaceIdInput.value = '';
   }
 
   function populateOnboardingForm(biz) {
@@ -171,6 +178,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     bizPrimaryCategoryInput.value = biz.primaryCategory || '';
     bizCityInput.value = biz.city || '';
     bizNeighborhoodInput.value = biz.neighborhood || '';
+    if (bizAddressInput) bizAddressInput.value = biz.address || '';
+    if (bizPostalCodeInput) bizPostalCodeInput.value = biz.postalCode || '';
+    if (bizPlaceIdInput) bizPlaceIdInput.value = biz.googlePlaceId || '';
     bizServiceAreasInput.value = biz.serviceAreas || '';
     bizServicesInput.value = Array.isArray(biz.services) ? biz.services.join(', ') : (biz.services || '');
     bizKeywordsInput.value = Array.isArray(biz.secondaryKeywords) ? biz.secondaryKeywords.join(', ') : (biz.secondaryKeywords || '');
@@ -200,6 +210,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       primaryCategory: bizPrimaryCategoryInput.value.trim(),
       city: bizCityInput.value.trim(),
       neighborhood: bizNeighborhoodInput.value.trim(),
+      address: bizAddressInput ? bizAddressInput.value.trim() : undefined,
+      postalCode: bizPostalCodeInput ? bizPostalCodeInput.value.trim() : undefined,
+      googlePlaceId: bizPlaceIdInput ? (bizPlaceIdInput.value.trim() || undefined) : undefined,
       serviceAreas: bizServiceAreasInput.value.trim(),
       services: servicesArr,
       secondaryKeywords: keywordsArr,
@@ -249,19 +262,36 @@ document.addEventListener('DOMContentLoaded', async () => {
           const current = await window.LiviaApi.getBusinessData();
           const merged = [...current.businesses];
 
+          // Função de chave composta para desambiguação
+          const getCompKey = (b) => {
+            const norm = s => (s || '').toLowerCase().trim().replace(/\s+/g, ' ');
+            return [norm(b.name), norm(b.city), norm(b.address || b.neighborhood || '')].filter(Boolean).join('::');
+          };
+
           imported.forEach(newBiz => {
-            if (!merged.some(b => b.name.toLowerCase() === newBiz.name.toLowerCase())) {
+            const hasExisting = merged.some(b => {
+              // 1. Mesmo ID persistente
+              if (b.id && newBiz.id && b.id === newBiz.id) return true;
+              // 2. Mesmo Google Place ID oficial
+              if (b.googlePlaceId && newBiz.googlePlaceId && b.googlePlaceId === newBiz.googlePlaceId) return true;
+              // 3. Mesma chave composta exata (Nome + Cidade + Endereço)
+              const k1 = getCompKey(b);
+              const k2 = getCompKey(newBiz);
+              return k1 && k2 && k1 === k2;
+            });
+
+            // Se for filial diferente ou empresa diferente em outra cidade, preserva ambas!
+            if (!hasExisting) {
               merged.push({
                 ...newBiz,
-                id: newBiz.id || 'biz_' + Math.random().toString(36).substr(2, 9)
+                id: newBiz.id || 'biz_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6)
               });
             }
           });
 
-          chrome.storage.sync.set({ businesses: merged }, () => {
-            alert('Importação concluída com sucesso!');
-            loadAndRenderBusinesses();
-          });
+          await window.LiviaApi.saveRawBusinesses(merged);
+          alert('Importação concluída com sucesso!');
+          loadAndRenderBusinesses();
         } else {
           alert('O arquivo selecionado não contém uma lista válida de empresas.');
         }
@@ -278,12 +308,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = liviaApiTokenInput.value.trim();
 
     chrome.storage.sync.set({
-      liviaApiUrl: url,
-      liviaApiToken: token
+      liviaApiUrl: url
     }, () => {
-      connectionStatus.className = 'status-msg status-success';
-      connectionStatus.innerText = '✅ Configurações de API salvas com sucesso!';
-      setTimeout(() => connectionStatus.innerText = '', 3500);
+      chrome.storage.local.set({
+        liviaApiToken: token
+      }, () => {
+        connectionStatus.className = 'status-msg status-success';
+        connectionStatus.innerText = '✅ Configurações de API salvas com segurança no storage local!';
+        setTimeout(() => connectionStatus.innerText = '', 3500);
+      });
     });
   });
 

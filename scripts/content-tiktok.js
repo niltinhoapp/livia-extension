@@ -121,19 +121,29 @@
             mediaDataUrl = await processAndDownloadMedia(mainMediaUrl, filename);
           }
 
-          chrome.storage.local.set({
-            lastTransformedPost: {
-              source: 'tiktok',
-              text: result.text,
-              sourceUrl: post.permalink,
-              author: post.author || '',
-              mediaUrls: mediaUrls,
-              mediaDataUrl: mediaDataUrl,
-              mediaType: 'VIDEO',
-              mainMediaFilename: filename,
-              businessName: bizLabel,
-              timestamp: Date.now()
+          const postPayload = {
+            source: 'tiktok',
+            text: result.text,
+            sourceUrl: post.permalink,
+            author: post.author || '',
+            mediaUrls: mediaUrls,
+            mediaDataUrl: mediaDataUrl,
+            mediaType: 'VIDEO',
+            mainMediaFilename: filename,
+            businessId: activeBiz?.id || null,
+            businessName: activeBiz?.name || bizLabel,
+            timestamp: Date.now()
+          };
+
+          chrome.storage.local.get(['transformedPostsByBusiness'], (st) => {
+            const dict = st.transformedPostsByBusiness || {};
+            if (activeBiz?.id) {
+              dict[activeBiz.id] = postPayload;
             }
+            chrome.storage.local.set({
+              lastTransformedPost: postPayload,
+              transformedPostsByBusiness: dict
+            });
           });
 
           await navigator.clipboard.writeText(result.text);

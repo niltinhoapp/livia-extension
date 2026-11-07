@@ -18,11 +18,23 @@
   let cachedBizData = null;
   let isExecutingAutomation = false;
 
+  // Helper para sanitização contra XSS
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // Utilitário para exibir Toast na tela (e propagar de iframes para a janela principal)
   function showToast(message, duration = 4500) {
+    const safeMsg = String(message || '');
     if (!IS_TOP_FRAME) {
       try {
-        window.top.postMessage({ source: 'livia-copilot', action: 'show_toast', message, duration }, '*');
+        window.top.postMessage({ source: 'livia-copilot', action: 'show_toast', message: safeMsg, duration }, '*');
       } catch (e) {}
     }
 
@@ -31,7 +43,14 @@
 
     const toast = document.createElement('div');
     toast.className = 'livia-toast';
-    toast.innerHTML = `<span>✨</span><span>${message}</span>`;
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = '✨';
+    const textSpan = document.createElement('span');
+    textSpan.textContent = safeMsg;
+
+    toast.appendChild(iconSpan);
+    toast.appendChild(textSpan);
     document.body.appendChild(toast);
 
     setTimeout(() => {
@@ -52,9 +71,9 @@
 
   if (IS_TOP_FRAME) {
     window.addEventListener('message', (event) => {
-      if (!event.data || event.data.source !== 'livia-copilot') return;
-      if (event.data.action === 'show_toast') {
-        showToast(event.data.message, event.data.duration || 4500);
+      if (!event.data || typeof event.data !== 'object' || event.data.source !== 'livia-copilot') return;
+      if (event.data.action === 'show_toast' && event.data.message) {
+        showToast(String(event.data.message), event.data.duration || 4500);
       } else if (event.data.action === 'subframe_signals' && event.data.signals) {
         const s = event.data.signals;
         const changed =
@@ -135,9 +154,13 @@
     element.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: ' ' }));
   }
 
-  // Carrega ou atualiza os dados da empresa
+  // Carrega ou atualiza os dados da empresa (com suporte a isolamento por aba)
   async function refreshBusinessData() {
-    cachedBizData = await window.LiviaApi.getBusinessData();
+    const tabBizId = sessionStorage.getItem('livia_session_business_id');
+    cachedBizData = await window.LiviaApi.getBusinessData({ tabBusinessId: tabBizId });
+    if (!tabBizId && cachedBizData && cachedBizData.activeBusinessId) {
+      sessionStorage.setItem('livia_session_business_id', cachedBizData.activeBusinessId);
+    }
     return cachedBizData;
   }
 
@@ -315,9 +338,10 @@
         return;
       }
       selectedProspectOverride = null;
+      sessionStorage.setItem('livia_session_business_id', val);
       await window.LiviaApi.setActiveBusiness(val);
       await refreshBusinessData();
-      showToast(`Cliente ativo: ${cachedBizData.activeBusiness.name} 🚀`);
+      showToast(`Cliente ativo nesta aba: ${cachedBizData.activeBusiness.name} 🚀`);
       renderCommandCenterContent(currentCommandTab);
     });
 
@@ -563,44 +587,32 @@
     return null;
   }
 
-  // Tenta detectar a empresa na página e selecionar no Dock
+  // Tenta detectar a empresa na página e selecionar no Dock (com isolamento por aba)
   function autoDetectBusinessOnScreen() {
     try {
       const realTitle = getRealBusinessTitleFromPage();
+      if (!realTitle || !cachedBizData) return;
       const { businesses, activeBusinessId } = cachedBizData;
       let matchedBiz = null;
 
-      if (realTitle) {
-        for (const biz of businesses) {
-          if (realTitle.toLowerCase().includes(biz.name.toLowerCase()) || biz.name.toLowerCase().includes(realTitle.toLowerCase())) {
-            matchedBiz = biz;
-            if (biz.id !== activeBusinessId) {
-              window.LiviaApi.setActiveBusiness(biz.id).then(() => {
-                const select = document.getElementById('livia-dock-select');
-                if (select) select.value = biz.id;
-                refreshBusinessData();
-                showToast(`Lívia identificou o perfil: ${biz.name} e ativou o contexto automaticamente! ✨`, 3000);
-              });
-            }
-            break;
-          }
+      for (const biz of businesses) {
+        if (!biz.name) continue;
+        const bName = biz.name.toLowerCase().trim();
+        const rTitle = realTitle.toLowerCase().trim();
+        if (rTitle.includes(bName) || bName.includes(rTitle)) {
+          matchedBiz = biz;
+          break;
         }
       }
 
-      // Calibra a cidade somente se a empresa aberta na tela for realmente a empresa gerenciada
-      if (matchedBiz) {
-        const pageAddressElements = Array.from(document.querySelectorAll('[data-attrid*="address"], span.LrzXr, div[data-local-attribute="d3adr"], div[aria-label*="Endereço" i]'));
-        const addressString = pageAddressElements.map(el => el.innerText).join(' ');
-        if ((addressString.includes('Macatuba') || addressString.includes('macatuba')) && matchedBiz.city.toLowerCase() !== 'macatuba') {
-          const updatedBiz = {
-            ...matchedBiz,
-            city: 'Macatuba',
-            serviceAreas: 'Macatuba, Lençóis Paulista e Região'
-          };
-          window.LiviaApi.saveBusiness(updatedBiz).then(() => {
-            refreshBusinessData();
-          });
-        }
+      if (matchedBiz && matchedBiz.id !== activeBusinessId) {
+        // Isola o contexto nesta aba via sessionStorage sem contaminar outras abas abertas
+        sessionStorage.setItem('livia_session_business_id', matchedBiz.id);
+        refreshBusinessData().then(() => {
+          const select = document.getElementById('livia-dock-select');
+          if (select) select.value = matchedBiz.id;
+          showToast(`Lívia identificou o perfil: ${matchedBiz.name} e ativou o contexto nesta aba! ✨`, 3000);
+        });
       }
     } catch (e) {
       // Silencioso se não conseguir casar
@@ -612,7 +624,7 @@
     const liveData = collectLiveProfileData(cachedBizData?.activeBusiness);
     const defaultName = (typeof prefilledData === 'string' ? prefilledData : prefilledData?.name) || '';
     const defaultCat = prefilledData?.primaryCategory || prefilledData?.niche || '';
-    const defaultCity = prefilledData?.city || liveData.detectedCity || cachedBizData?.activeBusiness?.city || 'Macatuba';
+    const defaultCity = prefilledData?.city || liveData.detectedCity || cachedBizData?.activeBusiness?.city || '';
     const defaultPhone = prefilledData?.whatsapp || prefilledData?.phone || '';
 
     const backdrop = document.createElement('div');
@@ -1252,25 +1264,39 @@
       btnImportInsta.className = 'livia-btn-inline livia-btn-secondary';
       btnImportInsta.innerHTML = `<span>📸</span><span>Puxar do Instagram</span>`;
 
-      // Verifica se há um post recente para destacar o botão
-      chrome.storage.local.get(['lastTransformedPost'], (res) => {
-        if (res.lastTransformedPost && res.lastTransformedPost.text) {
-          const isRecent = (Date.now() - (res.lastTransformedPost.timestamp || 0)) < 15 * 60 * 1000;
+      // Verifica se há um post recente para destacar o botão (respeitando a empresa ativa)
+      const currentBiz = cachedBizData?.activeBusiness;
+      chrome.storage.local.get(['lastTransformedPost', 'transformedPostsByBusiness'], (res) => {
+        const postData = (currentBiz && res.transformedPostsByBusiness && res.transformedPostsByBusiness[currentBiz.id])
+          || res.lastTransformedPost;
+        if (postData && postData.text) {
+          const isRecent = (Date.now() - (postData.timestamp || 0)) < 15 * 60 * 1000;
           if (isRecent && (!textarea.value || !textarea.value.trim())) {
-            btnImportInsta.innerHTML = `<span>⚡</span><span>Puxar Post + Foto do Instagram</span>`;
+            btnImportInsta.innerHTML = `<span>⚡</span><span>Puxar Post + Foto (${postData.businessName || 'Redes'})</span>`;
           }
         }
       });
 
       btnImportInsta.addEventListener('click', async (e) => {
         e.preventDefault();
-        chrome.storage.local.get(['lastTransformedPost'], (res) => {
-          if (res.lastTransformedPost && res.lastTransformedPost.text) {
-            setNativeValue(textarea, res.lastTransformedPost.text);
+        const currentBiz = cachedBizData?.activeBusiness;
+        chrome.storage.local.get(['lastTransformedPost', 'transformedPostsByBusiness'], (res) => {
+          let postData = null;
+          if (currentBiz && res.transformedPostsByBusiness && res.transformedPostsByBusiness[currentBiz.id]) {
+            postData = res.transformedPostsByBusiness[currentBiz.id];
+          } else if (res.lastTransformedPost) {
+            postData = res.lastTransformedPost;
+            if (postData.businessId && currentBiz && postData.businessId !== currentBiz.id) {
+              showToast(`⚠️ Post importado foi gerado para "${postData.businessName || 'outra empresa'}".`, 3500);
+            }
+          }
+
+          if (postData && postData.text) {
+            setNativeValue(textarea, postData.text);
 
             // Renderiza o card da foto/vídeo se houver mídia
-            if (res.lastTransformedPost.mediaUrls && res.lastTransformedPost.mediaUrls.length > 0) {
-              renderImportedMediaCard(modal, buttonContainer, res.lastTransformedPost);
+            if (postData.mediaUrls && postData.mediaUrls.length > 0) {
+              renderImportedMediaCard(modal, buttonContainer, postData);
               showToast('Post e foto do Instagram importados para o Google! 🚀');
             } else {
               showToast('Post das redes importado e otimizado para o Google! 🚀');
@@ -1574,8 +1600,16 @@
     }
 
     // Se houver um post capturado do Instagram/Facebook no storage, exibe o Card completo com Foto e Ações!
-    chrome.storage.local.get(['lastTransformedPost'], (res) => {
-      const saved = res.lastTransformedPost;
+    chrome.storage.local.get(['lastTransformedPost', 'transformedPostsByBusiness'], (res) => {
+      let saved = null;
+      if (activeBiz && res.transformedPostsByBusiness && res.transformedPostsByBusiness[activeBiz.id]) {
+        saved = res.transformedPostsByBusiness[activeBiz.id];
+      } else if (res.lastTransformedPost) {
+        saved = res.lastTransformedPost;
+        if (saved.businessId && activeBiz && saved.businessId !== activeBiz.id) {
+          showToast(`⚠️ Post importado foi gerado para "${saved.businessName || 'outra empresa'}".`, 3500);
+        }
+      }
       if (saved && saved.text && !prefillText) {
         postInput.value = saved.text;
       }
@@ -1584,6 +1618,20 @@
         renderImportedMediaCard(backdrop, instaSlot, saved);
       }
     });
+
+    const persistMediaPost = (mediaObj) => {
+      currentMediaObj = mediaObj;
+      chrome.storage.local.get(['transformedPostsByBusiness'], (res) => {
+        const dict = res.transformedPostsByBusiness || {};
+        if (activeBiz && activeBiz.id) {
+          dict[activeBiz.id] = mediaObj;
+        }
+        chrome.storage.local.set({
+          lastTransformedPost: mediaObj,
+          transformedPostsByBusiness: dict
+        });
+      });
+    };
 
     // Escolher Foto ou Vídeo do Computador (com renomeação SEO automática!)
     const filePicker = backdrop.querySelector('#livia-local-file-picker');
@@ -1597,15 +1645,16 @@
 
       const reader = new FileReader();
       reader.onload = () => {
-        currentMediaObj = {
+        persistMediaPost({
           text: postInput.value,
           mediaUrls: [reader.result],
           mediaDataUrl: reader.result,
           mediaType: isVid ? 'VIDEO' : 'IMAGE',
           mainMediaFilename: seoName,
+          businessId: activeBiz?.id || null,
+          businessName: activeBiz?.name || '',
           timestamp: Date.now()
-        };
-        chrome.storage.local.set({ lastTransformedPost: currentMediaObj });
+        });
         renderImportedMediaCard(backdrop, instaSlot, currentMediaObj);
         showToast(`✅ Arquivo renomeado com SEO para "${seoName}" e pronto para postar!`);
       };
@@ -1616,15 +1665,16 @@
     backdrop.querySelector('#livia-btn-gen-banner').onclick = async () => {
       const dataUrl = generatePromotionalBannerDataUrl(activeBiz);
       const seoName = window.LiviaApi.buildSeoFilename(activeBiz, 'banner-oficial', 'png');
-      currentMediaObj = {
+      persistMediaPost({
         text: postInput.value,
         mediaUrls: [dataUrl],
         mediaDataUrl: dataUrl,
         mediaType: 'IMAGE',
         mainMediaFilename: seoName,
+        businessId: activeBiz?.id || null,
+        businessName: activeBiz?.name || '',
         timestamp: Date.now()
-      };
-      chrome.storage.local.set({ lastTransformedPost: currentMediaObj });
+      });
       renderImportedMediaCard(backdrop, instaSlot, currentMediaObj);
       showToast('🎨 Arte HD 1080x1080 gerada com os serviços e WhatsApp da empresa!');
     };
@@ -2301,13 +2351,12 @@
     // Verifica se a ficha aberta na tela pertence ao cliente ativo gerenciado ou se é um prospect de terceiro
     let isManagedClient = false;
     if (activeBiz && activeBiz.name && kpName) {
-      const activeLower = activeBiz.name.toLowerCase();
-      const mainBrandWord = activeLower.split(/\s+/)[0];
-      if (
-        kpLower.includes(activeLower) ||
-        activeLower.includes(kpLower) ||
-        (mainBrandWord.length >= 5 && kpLower.includes(mainBrandWord))
-      ) {
+      const normStr = s => (s || '').toLowerCase().trim().replace(/[\u200B-\u200F\u202A-\u202E]/g, '').replace(/\s+/g, ' ');
+      const activeLower = normStr(activeBiz.name);
+      const kpLower = normStr(kpName);
+      
+      // Validação estrita: correspondência exata ou de nome comercial completo (evita falso positivo por palavras comuns)
+      if (activeLower === kpLower || (activeLower.length >= 8 && kpLower.includes(activeLower)) || (kpLower.length >= 8 && activeLower.includes(kpLower))) {
         isManagedClient = true;
       }
     }
@@ -2769,19 +2818,25 @@
       )) ||
       (isManagedClient && hasPhone && !hasMissingHoursWarningCard && cleanPageText.includes('Sua empresa no Google'));
 
-    let siteBtn = (detailContainer || openGoogleModal || document).querySelector(
+    // Detecção estritamente isolada no container da empresa ou card de listagem (nunca no document global!)
+    let siteBtn = (detailContainer || openGoogleModal)?.querySelector(
       'a[data-attrid*="website"], a[aria-label*="Site" i], a[aria-label*="Website" i], a.ab_button[href^="http"]:not([href*="google.com"])'
     );
-    if (!siteBtn) {
-      const actionBtns = Array.from((detailContainer || openGoogleModal || document).querySelectorAll('a, button, div[role="button"], span'));
+    if (!siteBtn && (detailContainer || openGoogleModal || matchedCard)) {
+      const scope = detailContainer || openGoogleModal || matchedCard;
+      const actionBtns = Array.from(scope.querySelectorAll('a, button, div[role="button"], span'));
       siteBtn = actionBtns.find(el => {
         if (el.closest('#livia-command-center, .livia-modal-backdrop')) return false;
         const t = (el.innerText || '').trim().toLowerCase();
         return t === 'website' || t === 'site' || t === 'acessar site';
       });
     }
-    const hasWebsite = !!(siteBtn || (isManagedClient && activeBiz && activeBiz.website));
-    const websiteUrl = (siteBtn && siteBtn.href) ? siteBtn.href : (isManagedClient ? (activeBiz?.website || '') : '');
+
+    // A presença de website no Google é confirmada exclusivamente pela ficha, sem herança cega do CRM
+    const rawSiteUrl = (siteBtn && siteBtn.href && !siteBtn.href.includes('google.com/search')) ? siteBtn.href : (siteBtn ? siteBtn.getAttribute('data-url') || '' : '');
+    const hasWebsite = !!(siteBtn && rawSiteUrl);
+    const websiteUrl = rawSiteUrl;
+    const crmWebsite = (isManagedClient && activeBiz) ? (activeBiz.website || '') : '';
 
     return {
       kpName,
@@ -2803,6 +2858,7 @@
       hasHours,
       hasWebsite,
       websiteUrl,
+      crmWebsite,
       profileSpecificText: profileSpecificText.slice(0, 6000),
       fullPageText: cleanPageText.slice(0, 12000)
     };
@@ -2936,12 +2992,16 @@
 
     // Site
     if (!auditData.hasWebsite) {
-      add('website', 'Site vinculado', 'Não', 'nao_detectado');
+      if (auditData.crmWebsite) {
+        add('website', 'Site no Google', 'Não vinculado no Google', 'crm', `Empresa tem site cadastrado na agência (${auditData.crmWebsite}), mas a ficha no Google está sem botão de site`);
+      } else {
+        add('website', 'Site no Google', 'Não', 'nao_detectado', 'Nenhum botão de site localizado na ficha oficial');
+      }
     } else {
       let host = '';
       try { host = auditData.websiteUrl ? new URL(auditData.websiteUrl).hostname : ''; } catch (e) {}
       const src = (detailContainer || matchedCard) ? 'ficha' : 'pagina';
-      add('website', 'Site vinculado', host || 'Sim (botão "Site")', auditData.isManagedClient && !host ? 'inferido' : src);
+      add('website', 'Site no Google', host || auditData.websiteUrl || 'Sim (botão "Site")', src, `URL confirmada na ficha: ${auditData.websiteUrl}`);
     }
 
     // Descrição
@@ -3136,7 +3196,9 @@
         openGbpCheckProModal('reviews');
       }
     } else if (fixAction === 'AUTO_FIX_ADDRESS') {
-      const addr = `${activeBiz?.neighborhood || 'Centro'}, ${activeBiz?.city || auditData.detectedCity || 'Macatuba'}`;
+      const cityPart = activeBiz?.city || auditData.detectedCity || '';
+      const neighPart = activeBiz?.neighborhood || '';
+      const addr = [neighPart, cityPart].filter(Boolean).join(', ') || 'Local';
       await startGoogleAutomationFlow('FILL_ADDRESS', { address: addr });
     } else if (fixAction === 'AUTO_FIX_CONTACT') {
       await startGoogleAutomationFlow('FILL_CONTACT', {
@@ -4290,8 +4352,8 @@
 
     const kwRows = (kwRadar.keywords || []).slice(0, 6).map(k => `
       <tr>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${k.term}</td>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0;">${k.intent}</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${escapeHtml(k.term)}</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(k.intent)}</td>
         <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: ${k.present ? '#10b981' : '#ef4444'};">
           ${k.present ? '✅ Presente na Ficha' : '❌ Ausente (Perdendo Buscas)'}
         </td>
@@ -4301,7 +4363,7 @@
     const compRows = (compGap.competitors || []).slice(0, 3).map(c => `
       <tr>
         <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 800; color: #0284c7;">#${c.rank}</td>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 700;">${c.name}</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 700;">${escapeHtml(c.name)}</td>
         <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0;">⭐ ${c.rating}</td>
         <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #059669;">${c.reviews} avaliações</td>
         <td style="padding: 7px 10px; border-bottom: 1px solid #e2e8f0;">${c.hasWebsite ? '🌐 Possui Site' : '❌ Sem Site'}</td>
@@ -4318,7 +4380,7 @@
       <html lang="pt-BR">
       <head>
         <meta charset="UTF-8">
-        <title>Laudo de SEO Local — ${companyName}</title>
+        <title>Laudo de SEO Local — ${escapeHtml(companyName)}</title>
         <style>
           body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; background: #e2e8f0; margin: 0; padding: 24px; }
           .page { max-width: 820px; margin: 0 auto; background: #ffffff; padding: 36px 42px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
@@ -4347,10 +4409,10 @@
           <div class="header">
             <div>
               <div style="font-size: 11px; font-weight: 800; color: #0284c7; text-transform: uppercase;">AUDITORIA OFICIAL DE POSICIONAMENTO GOOGLE MEU NEGÓCIO</div>
-              <div style="font-size: 24px; font-weight: 900; color: #0f172a; margin-top: 4px;">${companyName}</div>
+              <div style="font-size: 24px; font-weight: 900; color: #0f172a; margin-top: 4px;">${escapeHtml(companyName)}</div>
               <div style="font-size: 13px; color: #64748b; margin-top: 3px;">
-                Categoria: <strong>${auditData.categoryText || 'Não configurada'}</strong> • Cidade: <strong>${auditData.detectedCity || 'Local'}</strong>
-                ${auditData.hasStreetAddress ? ` • Endereço: <strong>${auditData.addressText}</strong>` : ''}
+                Categoria: <strong>${escapeHtml(auditData.categoryText || 'Não configurada')}</strong> • Cidade: <strong>${escapeHtml(auditData.detectedCity || 'Local')}</strong>
+                ${auditData.hasStreetAddress ? ` • Endereço: <strong>${escapeHtml(auditData.addressText || '')}</strong>` : ''}
               </div>
               <div style="margin-top: 6px;">
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companyName + ' ' + (auditData.detectedCity || ''))}" target="_blank" style="color: #0284c7; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
@@ -4359,8 +4421,8 @@
               </div>
             </div>
             <div style="text-align: right;">
-              <div style="font-weight: 800; font-size: 14px; color: #0f172a;">${agencyName}</div>
-              <div style="font-size: 12px; color: ${agencyColor}; font-weight: 600;">${agencySlogan}</div>
+              <div style="font-weight: 800; font-size: 14px; color: #0f172a;">${escapeHtml(agencyName)}</div>
+              <div style="font-size: 12px; color: ${escapeHtml(agencyColor)}; font-weight: 600;">${escapeHtml(agencySlogan)}</div>
               <div style="font-size: 11px; color: #64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div>
             </div>
           </div>
@@ -5500,8 +5562,16 @@
       const mediaSlot = body.querySelector('#livia-cc-media-slot');
       let activeMedia = null;
 
-      chrome.storage.local.get(['lastTransformedPost'], (res) => {
-        const saved = res.lastTransformedPost;
+      chrome.storage.local.get(['lastTransformedPost', 'transformedPostsByBusiness'], (res) => {
+        let saved = null;
+        if (effectiveBiz && res.transformedPostsByBusiness && res.transformedPostsByBusiness[effectiveBiz.id]) {
+          saved = res.transformedPostsByBusiness[effectiveBiz.id];
+        } else if (res.lastTransformedPost) {
+          saved = res.lastTransformedPost;
+          if (saved.businessId && effectiveBiz && saved.businessId !== effectiveBiz.id) {
+            showToast(`⚠️ Post importado foi gerado para "${saved.businessName || 'outra empresa'}".`, 3500);
+          }
+        }
         if (saved && saved.text) postTa.value = saved.text;
         if (saved && (saved.mediaDataUrl || (saved.mediaUrls && saved.mediaUrls[0]))) {
           activeMedia = saved;
@@ -5509,11 +5579,34 @@
         }
       });
 
+      const persistCcMedia = (mediaObj) => {
+        activeMedia = mediaObj;
+        chrome.storage.local.get(['transformedPostsByBusiness'], (res) => {
+          const dict = res.transformedPostsByBusiness || {};
+          if (effectiveBiz && effectiveBiz.id) {
+            dict[effectiveBiz.id] = mediaObj;
+          }
+          chrome.storage.local.set({
+            lastTransformedPost: mediaObj,
+            transformedPostsByBusiness: dict
+          });
+        });
+      };
+
       const pullSocialBtn = body.querySelector('#livia-cc-pull-social');
       if (pullSocialBtn) {
         pullSocialBtn.onclick = () => {
-          chrome.storage.local.get(['lastTransformedPost'], (res) => {
-            const saved = res.lastTransformedPost;
+          chrome.storage.local.get(['lastTransformedPost', 'transformedPostsByBusiness'], (res) => {
+            let saved = null;
+            if (effectiveBiz && res.transformedPostsByBusiness && res.transformedPostsByBusiness[effectiveBiz.id]) {
+              saved = res.transformedPostsByBusiness[effectiveBiz.id];
+            } else if (res.lastTransformedPost) {
+              saved = res.lastTransformedPost;
+              if (saved.businessId && effectiveBiz && saved.businessId !== effectiveBiz.id) {
+                showToast(`⚠️ Post adaptado de "${saved.businessName || 'outra empresa'}" para ${effectiveBiz.name}.`, 3500);
+              }
+            }
+
             if (saved && saved.text) {
               postTa.value = saved.text;
               if (saved.mediaDataUrl || (saved.mediaUrls && saved.mediaUrls[0])) {
@@ -5539,15 +5632,16 @@
         const seoName = window.LiviaApi.buildSeoFilename(effectiveBiz, 'post-local', ext);
         const reader = new FileReader();
         reader.onload = () => {
-          activeMedia = {
+          persistCcMedia({
             text: postTa.value,
             mediaUrls: [reader.result],
             mediaDataUrl: reader.result,
             mediaType: isVid ? 'VIDEO' : 'IMAGE',
             mainMediaFilename: seoName,
+            businessId: effectiveBiz?.id || null,
+            businessName: effectiveBiz?.name || '',
             timestamp: Date.now()
-          };
-          chrome.storage.local.set({ lastTransformedPost: activeMedia });
+          });
           renderImportedMediaCard(body, mediaSlot, activeMedia);
           showToast(`✅ Arquivo renomeado com SEO: "${seoName}"`);
         };
@@ -5557,15 +5651,16 @@
       body.querySelector('#livia-cc-gen-banner').onclick = () => {
         const bannerUrl = generatePromotionalBannerDataUrl(effectiveBiz);
         const seoName = window.LiviaApi.buildSeoFilename(effectiveBiz, 'arte-hd', 'png');
-        activeMedia = {
+        persistCcMedia({
           text: postTa.value,
           mediaUrls: [bannerUrl],
           mediaDataUrl: bannerUrl,
           mediaType: 'IMAGE',
           mainMediaFilename: seoName,
+          businessId: effectiveBiz?.id || null,
+          businessName: effectiveBiz?.name || '',
           timestamp: Date.now()
-        };
-        chrome.storage.local.set({ lastTransformedPost: activeMedia });
+        });
         renderImportedMediaCard(body, mediaSlot, activeMedia);
         showToast('🎨 Arte HD 1080x1080 gerada com sucesso!');
       };

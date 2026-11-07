@@ -1,0 +1,12 @@
+{
+  "name": "livia-extension",
+  "version": "2.1.0",
+  "description": "Lívia Stenção — Extensão Chrome MV3 para SEO Local, Gestão de Avaliações e Prospecção Multi-Tenant no Google Meu Negócio",
+  "main": "lib/livia-api.js",
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  },
+  "author": "ConectWeb",
+  "license": "UNLICENSED",
+  "private": true
+}

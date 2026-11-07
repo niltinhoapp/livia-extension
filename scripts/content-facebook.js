@@ -111,17 +111,27 @@
             mediaDataUrl = await processAndDownloadMedia(mainMediaUrl, filename);
           }
 
-          chrome.storage.local.set({
-            lastTransformedPost: {
-              text: result.text,
-              sourceUrl: post.permalink,
-              mediaUrls: mediaUrls,
-              mediaDataUrl: mediaDataUrl,
-              mediaType: 'IMAGE',
-              mainMediaFilename: filename,
-              businessName: bizLabel,
-              timestamp: Date.now()
+          const postPayload = {
+            text: result.text,
+            sourceUrl: post.permalink,
+            mediaUrls: mediaUrls,
+            mediaDataUrl: mediaDataUrl,
+            mediaType: 'IMAGE',
+            mainMediaFilename: filename,
+            businessId: activeBiz?.id || null,
+            businessName: activeBiz?.name || bizLabel,
+            timestamp: Date.now()
+          };
+
+          chrome.storage.local.get(['transformedPostsByBusiness'], (st) => {
+            const dict = st.transformedPostsByBusiness || {};
+            if (activeBiz?.id) {
+              dict[activeBiz.id] = postPayload;
             }
+            chrome.storage.local.set({
+              lastTransformedPost: postPayload,
+              transformedPostsByBusiness: dict
+            });
           });
 
           await navigator.clipboard.writeText(result.text);

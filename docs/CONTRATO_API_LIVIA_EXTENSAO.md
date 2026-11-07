@@ -197,3 +197,39 @@ Valida a chave de licença vendida para o cliente (via Kiwify, Hotmart, Asaas ou
   "message": "Chave de licença inválida, expirada ou cancelada na plataforma de pagamento."
 }
 ```
+
+---
+
+## 3. Arquitetura de Dados e Fontes da Extensão
+
+A extensão **Lívia Stenção** opera em arquitetura híbrida de alta performance, projetada para uso profissional por agências de marketing digital:
+
+### 3.1. Diferenciação de Fontes: Google Places API vs Automação DOM
+
+| Dimensão | Automação DOM (Modo Real-Time) | Google Places API (Modo Turbo) |
+| :--- | :--- | :--- |
+| **Camada de Execução** | `content-gbp.js` injetado na página do Google | `scripts/background.js` (Service Worker) |
+| **Finalidade** | Auditoria instantânea da ficha aberta na tela | Prospecção em massa e inteligência competitiva |
+| **Custo / Quota** | Zero custo de API, opera 100% no navegador | Requer API Key oficial do Google Cloud |
+| **Precisão de Identidade** | Título do painel, card e atributos visuais | Place ID canônico único oficial do Google |
+| **Comportamento em Falha** | Fallback para dados cadastrados na Lívia | Retorna status de erro claro com diagnóstico |
+
+### 3.2. Modelo de Armazenamento e Quotas (Schema v2)
+
+* **`chrome.storage.local` (10 MB):** Repositório principal do catálogo multi-empresa (`businesses`), backups versionados (`businesses_backup_v1`), chave da Places API (`googlePlacesApiKey`), token secreto da Lívia (`liviaApiToken`) e histórico de posts transformados por empresa (`transformedPostsByBusiness`).
+* **`chrome.storage.sync` (8 KB):** Restrito à URL base do servidor (`liviaApiUrl`) e sincronização leve do ponteiro global `activeBusinessId`.
+* **Migração Automática:** O método `migrateStorageSchema()` detecta schemas legados v1, transfere automaticamente para `storage.local`, gera backup e grava `storageSchemaVersion: 2`.
+
+### 3.3. Isolamento de Abas e Sessões
+
+Cada aba do navegador onde a extensão está ativa mantém seu próprio identificador em `sessionStorage.getItem('livia_session_business_id')`. Ao consultar a API interna (`getBusinessData({ tabBusinessId })`), o contexto ativo daquela aba é garantido sem contaminação das demais abas operadas simultaneamente.
+
+### 3.4. Matriz de Confiabilidade e Proveniência de Dados
+
+Para cada dado exibido ou auditado na interface, a extensão classifica explicitamente a sua origem:
+* **`confirmado` / `ficha`:** Dado lido diretamente e com segurança no container/card da empresa inspecionada.
+* **`crm` / `usuario`:** Dado configurado manualmente pelo usuário ou agência no cadastro da empresa.
+* **`extraido`:** Dado raspado de listagens ou links externos verificados.
+* **`inferido`:** Dado estimado heuristicamente pelo algoritmo (sempre sinalizado para o operador).
+* **`nao_detectado`:** Informação ausente na ficha inspecionada (sem herança cega de outros perfis).
+

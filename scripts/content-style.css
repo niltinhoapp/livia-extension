@@ -381,7 +381,7 @@ html.livia-split-wide body {
 
 .livia-cc-tabs {
   display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
+  grid-template-columns: repeat(6, 1fr) !important;
   background: var(--cc-surface-alt) !important;
   padding: 3px !important;
   border-radius: 11px !important;

@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnOpenGeogrid = document.getElementById('btn-open-geogrid');
   btnOpenGeogrid?.addEventListener('click', () => {
     const biz = currentBusinessData?.activeBusiness;
-    const q = (biz?.primaryCategory || biz?.niche || 'serviços') + ' em ' + (biz?.city || 'Macatuba');
+    const q = (biz?.primaryCategory || biz?.niche || 'serviços') + (biz?.city ? ' em ' + biz.city : '');
     chrome.tabs.create({ url: `https://www.google.com/search?q=${encodeURIComponent(q)}` });
   });
 

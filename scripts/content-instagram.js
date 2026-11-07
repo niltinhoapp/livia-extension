@@ -423,17 +423,27 @@
             mediaDataUrl = await processAndDownloadMedia(mainMediaUrl, filename);
           }
 
-          chrome.storage.local.set({
-            lastTransformedPost: {
-              text: result.text,
-              sourceUrl: post.permalink,
-              mediaUrls: mediaUrls,
-              mediaDataUrl: mediaDataUrl,
-              mediaType: post.mediaType || 'IMAGE',
-              mainMediaFilename: filename,
-              businessName: bizLabel,
-              timestamp: Date.now()
+          const postPayload = {
+            text: result.text,
+            sourceUrl: post.permalink,
+            mediaUrls: mediaUrls,
+            mediaDataUrl: mediaDataUrl,
+            mediaType: post.mediaType || 'IMAGE',
+            mainMediaFilename: filename,
+            businessId: activeBiz?.id || null,
+            businessName: activeBiz?.name || bizLabel,
+            timestamp: Date.now()
+          };
+
+          chrome.storage.local.get(['transformedPostsByBusiness'], (st) => {
+            const dict = st.transformedPostsByBusiness || {};
+            if (activeBiz?.id) {
+              dict[activeBiz.id] = postPayload;
             }
+            chrome.storage.local.set({
+              lastTransformedPost: postPayload,
+              transformedPostsByBusiness: dict
+            });
           });
 
           try {
@@ -582,17 +592,26 @@
       const post = new window.LiviaProviders.UniversalPost({ source: 'instagram', text: '', mediaUrls: [msg.srcUrl] });
       const res = await window.LiviaApi.transformPostForLocalSEO(post);
 
-      chrome.storage.local.set({
-        lastTransformedPost: {
-          text: res.text,
-          sourceUrl: window.location.href,
-          mediaUrls: [msg.srcUrl],
-          mediaDataUrl: dataUrl,
-          mediaType: 'IMAGE',
-          mainMediaFilename: filename,
-          businessName: bizLabel,
-          timestamp: Date.now()
+      const postPayload = {
+        text: res.text,
+        sourceUrl: window.location.href,
+        mediaUrls: [msg.srcUrl],
+        mediaDataUrl: dataUrl,
+        mediaType: 'IMAGE',
+        mainMediaFilename: filename,
+        businessId: activeBiz?.id || null,
+        businessName: activeBiz?.name || bizLabel,
+        timestamp: Date.now()
+      };
+      chrome.storage.local.get(['transformedPostsByBusiness'], (st) => {
+        const dict = st.transformedPostsByBusiness || {};
+        if (activeBiz?.id) {
+          dict[activeBiz.id] = postPayload;
         }
+        chrome.storage.local.set({
+          lastTransformedPost: postPayload,
+          transformedPostsByBusiness: dict
+        });
       });
       await navigator.clipboard.writeText(res.text);
       showToast('Imagem baixada e post gerado para o Google! 📸', 'Abrir Google Meu Negócio', () => {

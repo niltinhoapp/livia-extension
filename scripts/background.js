@@ -6,67 +6,80 @@
 chrome.runtime.onInstalled.addListener(() => {
   console.log('[Lívia Copilot Pro] Extensão instalada/atualizada com sucesso!');
 
-  // Inicializa configurações v2.0 se ainda não existirem
-  chrome.storage.sync.get(['liviaApiUrl', 'businesses'], (res) => {
-    const updates = {};
-    if (!res.liviaApiUrl) {
-      updates.liviaApiUrl = 'https://livia.conectweb.online/api';
-      updates.liviaApiToken = '';
-    }
-    if (!res.businesses || !Array.isArray(res.businesses) || res.businesses.length === 0) {
-      updates.businesses = [
-        {
-          id: 'biz_conectweb_default',
-          name: 'ConectWeb Soluções Digitais',
-          niche: 'Marketing Digital, Criação de Sites e Automações',
-          primaryCategory: 'Agência de Marketing Digital',
-          secondaryKeywords: ['criação de sites', 'seo local', 'google meu negócio', 'gestão de tráfego', 'automações comerciais'],
-          services: [
-            'Criação de Sites Profissionais e Sistemas',
-            'Gestão e Otimização de Google Meu Negócio',
-            'Tráfego Pago (Google Ads e Meta Ads)',
-            'Consultoria de SEO Local e Posicionamento',
-            'Automações Comerciais com Inteligência Artificial'
-          ],
-          city: 'Macatuba',
-          neighborhood: 'Centro',
-          serviceAreas: 'Macatuba, Lençóis Paulista, Bauru, Pederneiras e Região',
-          whatsapp: '5514996988997',
-          website: 'https://conectweb.online',
-          toneOfVoice: 'profissional',
-          reviewReplyPolicy: 'balanced',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'biz_sos_notebook_default',
-          name: 'SOS Notebook - Manutenção e Upgrade',
-          niche: 'Assistência Técnica de Notebooks, Computadores e PC Gamer',
-          primaryCategory: 'Assistência técnica de informática',
-          secondaryKeywords: ['conserto de notebook', 'manutenção de computadores', 'formatação', 'upgrade ssd', 'pc gamer horizonte'],
-          services: [
-            'Formatação nos Padrões de Fábrica com Backup',
-            'Upgrade de SSD Ultra Rápido e Memória RAM',
-            'Troca de Telas, Teclados, Baterias e Dobradiças',
-            'Limpeza Interna Completa e Troca de Pasta Térmica (CPU/GPU)',
-            'Montagem e Manutenção de PC Gamer e Computadores Comerciais',
-            'Reparo Avançado de Placa-Mãe e Peças Originais'
-          ],
-          city: 'Horizonte',
-          neighborhood: 'Diadema',
-          serviceAreas: 'Horizonte, Pacajus, Chorozinho e Região Metropolitana - CE',
-          whatsapp: '5585991187871',
-          website: '',
-          toneOfVoice: 'amigavel',
-          reviewReplyPolicy: 'balanced',
-          createdAt: new Date().toISOString()
-        }
-      ];
-      updates.activeBusinessId = 'biz_conectweb_default';
-    }
+  // Inicializa configurações v2.0 se ainda não existirem com isolamento local (10MB quota)
+  chrome.storage.local.get(['storageSchemaVersion', 'businesses', 'liviaApiToken', 'googlePlacesApiKey'], (localRes) => {
+    chrome.storage.sync.get(['liviaApiUrl', 'liviaApiToken', 'businesses', 'activeBusinessId'], (syncRes) => {
+      const hasLocalBiz = Array.isArray(localRes.businesses) && localRes.businesses.length > 0;
+      const hasSyncBiz = Array.isArray(syncRes.businesses) && syncRes.businesses.length > 0;
 
-    if (Object.keys(updates).length > 0) {
-      chrome.storage.sync.set(updates);
-    }
+      if (!hasLocalBiz && !hasSyncBiz) {
+        const defaultBusinesses = [
+          {
+            id: 'biz_conectweb_default',
+            name: 'ConectWeb Soluções Digitais',
+            niche: 'Marketing Digital, Criação de Sites e Automações',
+            primaryCategory: 'Agência de Marketing Digital',
+            secondaryKeywords: ['criação de sites', 'seo local', 'google meu negócio', 'gestão de tráfego', 'automações comerciais'],
+            services: [
+              'Criação de Sites Profissionais e Sistemas',
+              'Gestão e Otimização de Google Meu Negócio',
+              'Tráfego Pago (Google Ads e Meta Ads)',
+              'Consultoria de SEO Local e Posicionamento',
+              'Automações Comerciais com Inteligência Artificial'
+            ],
+            city: 'Macatuba',
+            neighborhood: 'Centro',
+            serviceAreas: 'Macatuba, Lençóis Paulista, Bauru, Pederneiras e Região',
+            whatsapp: '5514996988997',
+            website: 'https://conectweb.online',
+            toneOfVoice: 'profissional',
+            reviewReplyPolicy: 'balanced',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 'biz_sos_notebook_default',
+            name: 'SOS Notebook - Manutenção e Upgrade',
+            niche: 'Assistência Técnica de Notebooks, Computadores e PC Gamer',
+            primaryCategory: 'Assistência técnica de informática',
+            secondaryKeywords: ['conserto de notebook', 'manutenção de computadores', 'formatação', 'upgrade ssd', 'pc gamer horizonte'],
+            services: [
+              'Formatação nos Padrões de Fábrica com Backup',
+              'Upgrade de SSD Ultra Rápido e Memória RAM',
+              'Troca de Telas, Teclados, Baterias e Dobradiças',
+              'Limpeza Interna Completa e Troca de Pasta Térmica (CPU/GPU)',
+              'Montagem e Manutenção de PC Gamer e Computadores Comerciais',
+              'Reparo Avançado de Placa-Mãe e Peças Originais'
+            ],
+            city: 'Horizonte',
+            neighborhood: 'Diadema',
+            serviceAreas: 'Horizonte, Pacajus, Chorozinho e Região Metropolitana - CE',
+            whatsapp: '5585991187871',
+            website: '',
+            toneOfVoice: 'amigavel',
+            reviewReplyPolicy: 'balanced',
+            createdAt: new Date().toISOString()
+          }
+        ];
+
+        chrome.storage.local.set({
+          businesses: defaultBusinesses,
+          activeBusinessId: 'biz_conectweb_default',
+          storageSchemaVersion: 2
+        });
+
+        chrome.storage.sync.set({
+          liviaApiUrl: syncRes.liviaApiUrl || 'https://livia.conectweb.online/api',
+          activeBusinessId: 'biz_conectweb_default'
+        });
+      } else if (hasSyncBiz && !hasLocalBiz) {
+        chrome.storage.local.set({
+          businesses: syncRes.businesses,
+          activeBusinessId: syncRes.activeBusinessId || syncRes.businesses[0]?.id,
+          businesses_backup_v1: syncRes.businesses,
+          storageSchemaVersion: 2
+        });
+      }
+    });
   });
 
   // Recria menus de contexto de clique direito

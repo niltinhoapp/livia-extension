@@ -65,29 +65,51 @@
 
 ---
 
+## 🧪 Testes Automatizados (Garantia de Qualidade & Não-Regressão)
+
+A extensão possui suíte automatizada cobrindo cenários críticos de integridade multi-tenant:
+
+```bash
+npm test
+```
+
+### Cenários Cobertos:
+* **Cenário A:** Independência geográfica de empresas em cidades diferentes (sem hardcoded overwrite).
+* **Cenário B:** Filiais homônimas com o mesmo nome comercial e endereços distintos (desambiguação estável).
+* **Cenário C:** Isolamento rigoroso de abas e sessões (`sessionStorage` e `tabBusinessId`), evitando contaminação cruzada.
+* **Cenário D:** Associação fidedigna de website (não herdar site da agência quando ausente na ficha inspecionada).
+* **Cenário E:** Persistência no `chrome.storage.local` (10 MB quota) e migração automática de schema com backup v1.
+* **Cenário F:** Regressão funcional dos 13 motores nativos da Lívia.
+
+---
+
 ## 📂 Estrutura de Arquivos
 
 ```text
 livia-extension/
-├── manifest.json              # Configurações do Chrome Manifest V3 (v2.0.0 Pro)
+├── manifest.json              # Configurações do Chrome Manifest V3 (v2.1.0 Pro)
+├── package.json               # Configurações de automação e scripts de teste
+├── tests/
+│   └── run-tests.js           # Suíte de testes automatizados (Cenários A a F)
 ├── icons/                     # Ícones em alta resolução (16, 48, 128px e SVG)
 ├── lib/
-│   ├── providers.js           # Arquitetura universal extensível (Instagram, Facebook, LinkedIn)
+│   ├── providers.js           # Arquitetura universal extensível (Instagram, Facebook, TikTok)
 │   └── livia-api.js           # Núcleo multi-empresas, SEO local, reviews, descrição e auditoria
 ├── popup/
 │   ├── popup.html             # Painel rápido com seletor de empresa e gerador inteligente
 │   ├── popup.css
 │   └── popup.js
 ├── options/
-│   ├── options.html           # Painel de Onboarding (inspirado no Local Marketing Manager) e Backup
+│   ├── options.html           # Painel de Onboarding (com campos de endereço, CEP e Place ID)
 │   ├── options.css
 │   └── options.js
 ├── scripts/
-│   ├── background.js          # Service Worker do Manifest V3
-│   ├── content-gbp.js         # Dock flutuante, respostas de avaliações, descrição e posts no GMN
-│   ├── content-instagram.js   # Captura no Instagram Web
-│   ├── content-facebook.js    # Captura no Facebook Web
-│   └── content-style.css      # Design ConectWeb Pro com glassmorphism e paleta dark/cyan
+│   ├── background.js          # Service Worker do Manifest V3 (Google Places API Turbo)
+│   ├── content-gbp.js         # Command Center, auditoria real-time, posts e respostas
+│   ├── content-instagram.js   # Captura no Instagram Web com isolamento por empresa
+│   ├── content-facebook.js    # Captura no Facebook Web com isolamento por empresa
+│   ├── content-tiktok.js      # Captura no TikTok Web com isolamento por empresa
+│   └── content-style.css      # Design ConectWeb Pro executivo e responsivo
 └── docs/
-    └── CONTRATO_API_LIVIA_EXTENSAO.md # Especificação v2.0 para plugar no backend da Lívia
+    └── CONTRATO_API_LIVIA_EXTENSAO.md # Especificação v2.1 de integração e arquitetura
 ```
