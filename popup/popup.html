@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lívia Copilot</title>
+  <title>Lívia Copilot Pro</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -13,41 +13,62 @@
       <div class="brand">
         <div class="logo-badge">✨</div>
         <div class="brand-text">
-          <h1>Lívia Copilot</h1>
+          <h1>Lívia Copilot Pro</h1>
           <span class="subtext">ConectWeb Inteligência</span>
         </div>
       </div>
-      <div class="status-indicator" id="status-badge" title="Status da Conexão com a Lívia">
-        <span class="dot"></span>
-        <span class="status-label">Online</span>
+      <div class="status-indicator" id="status-badge" title="Status da Licença">
+        <span class="dot" style="background: #10b981;"></span>
+        <span class="status-label" id="popup-license-badge">Pro / Agência</span>
       </div>
     </header>
 
-    <!-- Context Card -->
+    <!-- Multi-Business Selector Bar -->
+    <div class="business-bar">
+      <div class="biz-select-wrapper">
+        <label for="biz-selector" class="biz-label">EMPRESA ATIVA:</label>
+        <select id="biz-selector"></select>
+      </div>
+      <button class="icon-btn" id="btn-add-biz" title="Cadastrar nova empresa / cliente">+</button>
+    </div>
+
+    <!-- Active Business Context Card -->
     <div class="context-card">
       <div class="card-row">
         <span class="card-label">Empresa:</span>
         <span class="card-value" id="display-company">Carregando...</span>
       </div>
       <div class="card-row">
+        <span class="card-label">Categoria:</span>
+        <span class="card-value" id="display-niche">Carregando...</span>
+      </div>
+      <div class="card-row">
         <span class="card-label">Local:</span>
         <span class="card-value" id="display-location">Carregando...</span>
       </div>
       <div class="card-row">
-        <span class="card-label">Conexões:</span>
+        <span class="card-label">Canais Ativos:</span>
         <span class="channels-tags">
           <span class="tag tag-active">Google Maps</span>
           <span class="tag tag-active">Instagram</span>
           <span class="tag tag-active">Facebook</span>
-          <span class="tag tag-future" title="Em breve">+ LinkedIn</span>
+          <span class="tag tag-active">TikTok</span>
         </span>
       </div>
     </div>
 
     <!-- Quick Tools -->
     <div class="quick-tools">
-      <h2>Ações Rápidas</h2>
-      <div class="tools-grid">
+      <h2>Ações Rápidas no Navegador</h2>
+      <div class="tools-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <button class="tool-btn" id="btn-create-listing" style="grid-column: span 2; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; border: none; font-weight: 800; padding: 10px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);">
+          <span class="tool-icon">🚀</span>
+          <span>+ Criar Nova Ficha no Google Meu Negócio</span>
+        </button>
+        <button class="tool-btn" id="btn-open-geogrid" style="grid-column: span 2; background: linear-gradient(135deg, #0284c7 0%, #00d2ff 100%); color: #ffffff; border: none; font-weight: 800; padding: 9px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);">
+          <span class="tool-icon">🗺️</span>
+          <span>Mapeamento Geo-Grid de Bairros (Ranking Local)</span>
+        </button>
         <button class="tool-btn" id="btn-open-gbp">
           <span class="tool-icon">📍</span>
           <span>Google Meu Negócio</span>
@@ -56,21 +77,35 @@
           <span class="tool-icon">📸</span>
           <span>Instagram Web</span>
         </button>
+        <button class="tool-btn" id="btn-open-face">
+          <span class="tool-icon">👥</span>
+          <span>Facebook Web</span>
+        </button>
+        <button class="tool-btn" id="btn-open-tiktok">
+          <span class="tool-icon">🎵</span>
+          <span>TikTok Web</span>
+        </button>
       </div>
     </div>
 
     <!-- Quick AI Playground -->
     <div class="playground">
-      <h2>Gerador Rápido Lívia</h2>
+      <h2>Gerador Inteligente Lívia</h2>
       <div class="input-group">
         <select id="quick-action-type">
-          <option value="review">💬 Responder Avaliação</option>
+          <option value="review">💬 Responder Avaliação (Smart / Crise)</option>
+          <option value="geogrid">🗺️ Simular Geo-Grid de Bairros (Ranking Local)</option>
           <option value="post">📝 Criar Post de SEO Local</option>
-          <option value="repurpose">🔄 Transformar Legenda de Rede</option>
+          <option value="description">✍️ Gerar Descrição da Empresa (750 chars)</option>
+          <option value="weekly_plan">📅 Calendário Semanal (3 Posts Prontos)</option>
+          <option value="services">🛠️ Catálogo de Serviços com SEO</option>
+          <option value="categories">🏷️ Sugerir Categorias Oficiais do Google</option>
+          <option value="qa">❓ Perguntas e Respostas (Q&A Seeder)</option>
+          <option value="repurpose">🔄 Transformar Legenda de Rede Social</option>
         </select>
       </div>
 
-      <textarea id="quick-input" placeholder="Cole a avaliação do cliente ou a legenda do post..."></textarea>
+      <textarea id="quick-input" placeholder="Cole a avaliação do cliente ou o tema do post..."></textarea>
 
       <button class="primary-btn" id="btn-generate">
         <span>✨</span>
@@ -79,7 +114,7 @@
 
       <div class="result-box" id="result-box" style="display: none;">
         <div class="result-header">
-          <span>Resultado da Lívia:</span>
+          <span id="result-title">Resultado da Lívia:</span>
           <button class="copy-btn" id="btn-copy">Copiar</button>
         </div>
         <div class="result-text" id="result-text"></div>
@@ -88,8 +123,8 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <a href="#" id="link-options">⚙️ Configurações & API Lívia</a>
-      <span class="version">v1.0.0</span>
+      <a href="#" id="link-options">⚙️ Gestão de Empresas & Configurações</a>
+      <span class="version">v2.0.0 Pro</span>
     </footer>
   </div>
 

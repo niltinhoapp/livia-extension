@@ -14,9 +14,9 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 24px;
 }
 
 /* Header */
@@ -24,7 +24,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -36,8 +36,8 @@ body {
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border-radius: 12px;
   background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
   display: flex;
@@ -70,13 +70,55 @@ h1 {
   font-weight: 600;
 }
 
-/* Cards */
-.content {
+/* Tabs Navigation */
+.tabs-nav {
   display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #8892b0;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+  background: #151c2c;
+  color: #00d2ff;
+  border-color: rgba(0, 210, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Content Area */
+.tab-content {
+  display: none;
   flex-direction: column;
   gap: 24px;
 }
 
+.tab-content.active {
+  display: flex;
+}
+
+/* Cards */
 .card {
   background: #151c2c;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -113,6 +155,120 @@ h2 {
   margin-bottom: 20px;
 }
 
+/* Businesses Grid */
+.biz-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.biz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.biz-card {
+  background: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.biz-card:hover {
+  border-color: rgba(0, 210, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.biz-card.is-active {
+  border: 1px solid #00d2ff;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+}
+
+.biz-card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.biz-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  padding-right: 60px;
+}
+
+.biz-card-info {
+  font-size: 12px;
+  color: #8892b0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.biz-card-info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.biz-card-actions {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 10px;
+}
+
+.biz-card-btn {
+  background: #151c2c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccd6f6;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.biz-card-btn:hover {
+  background: #1e283d;
+  color: #00d2ff;
+  border-color: #00d2ff;
+}
+
+.biz-card-btn.btn-active-toggle {
+  background: rgba(0, 210, 255, 0.15);
+  color: #00d2ff;
+  border-color: rgba(0, 210, 255, 0.4);
+}
+
+.biz-card-btn.btn-delete:hover {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+  border-color: #ff4757;
+}
+
 /* Forms */
 .form-grid {
   display: grid;
@@ -132,11 +288,11 @@ h2 {
 
 label {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: #ccd6f6;
 }
 
-input, select {
+input, select, textarea {
   background: #0b0f19;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
@@ -146,7 +302,7 @@ input, select {
   transition: all 0.2s;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #00d2ff;
   box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
@@ -227,9 +383,9 @@ small {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -239,6 +395,7 @@ small {
 .btn-primary {
   background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
   color: #0b0f19;
+  font-weight: 700;
   box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4);
 }
 

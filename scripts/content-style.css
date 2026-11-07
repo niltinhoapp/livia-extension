@@ -1,207 +1,1018 @@
 /**
- * Estilos do Lívia Copilot — Injetados no Google, Instagram e Facebook
- * Design moderno com a identidade visual ConectWeb (Dark + Cyan Glow).
+ * Estilos do Lívia Copilot Pro — Painel de Operações Split-Screen & Injeções Inline
+ * Design Executivo SaaS (Modo Claro Executivo por padrão + Modo Escuro Slate Suave)
+ * Desenvolvido para Gestores de Tráfego, Agências de SEO Local e Empresas (ConectWeb)
  */
 
 :root {
-  --livia-primary: #00d2ff;
-  --livia-secondary: #3a7bd5;
-  --livia-accent: #8a2be2;
-  --livia-bg: #0b0f19;
-  --livia-card: #151c2c;
-  --livia-text: #f0f4f8;
-  --livia-border: rgba(0, 210, 255, 0.3);
+  --livia-primary: #2563eb;
+  --livia-primary-hover: #1d4ed8;
+  --livia-emerald: #059669;
+  --livia-emerald-hover: #047857;
+  --livia-amber: #d97706;
+  --livia-danger: #dc2626;
 }
 
-/* Botão inline injetado */
-.livia-btn-inline {
-  display: inline-flex !important;
+/* Transição suave ao dividir a tela do Google com o Painel Lateral da Lívia */
+html.livia-split-active body {
+  margin-right: 450px !important;
+  transition: margin-right 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+html.livia-split-wide body {
+  margin-right: 580px !important;
+  transition: margin-right 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ==========================================================================
+   1. PAINEL LATERAL DE OPERAÇÕES (SPLIT-SCREEN COMMAND CENTER)
+   ========================================================================== */
+
+#livia-command-center {
+  /* Variáveis do Tema Claro Executivo (Padrão: descanso visual e leitura perfeita) */
+  --cc-bg: #f1f5f9;
+  --cc-surface: #ffffff;
+  --cc-surface-alt: #f8fafc;
+  --cc-header-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --cc-text: #0f172a;
+  --cc-text-secondary: #475569;
+  --cc-text-muted: #64748b;
+  --cc-border: #e2e8f0;
+  --cc-border-strong: #cbd5e1;
+  --cc-accent: #2563eb;
+  --cc-accent-soft: #eff6ff;
+  --cc-emerald: #059669;
+  --cc-emerald-soft: #ecfdf5;
+  --cc-warn: #d97706;
+  --cc-warn-soft: #fffbeb;
+  --cc-fail: #dc2626;
+  --cc-fail-soft: #fef2f2;
+  --cc-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 450px !important;
+  height: 100vh !important;
+  background: var(--cc-bg) !important;
+  color: var(--cc-text) !important;
+  border-left: 1px solid var(--cc-border-strong) !important;
+  box-shadow: -8px 0 30px rgba(15, 23, 42, 0.12) !important;
+  z-index: 2147483640 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif !important;
+  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+}
+
+/* Tema Escuro Slate Suave (Sem neon cansativo — Estilo Linear / Stripe Dark) */
+#livia-command-center.livia-theme-dark {
+  --cc-bg: #0f172a;
+  --cc-surface: #1e293b;
+  --cc-surface-alt: #0f172a;
+  --cc-header-bg: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+  --cc-text: #f8fafc;
+  --cc-text-secondary: #cbd5e1;
+  --cc-text-muted: #94a3b8;
+  --cc-border: #334155;
+  --cc-border-strong: #475569;
+  --cc-accent: #3b82f6;
+  --cc-accent-soft: rgba(59, 130, 246, 0.15);
+  --cc-emerald: #10b981;
+  --cc-emerald-soft: rgba(16, 185, 129, 0.14);
+  --cc-warn: #f59e0b;
+  --cc-warn-soft: rgba(245, 158, 11, 0.14);
+  --cc-fail: #ef4444;
+  --cc-fail-soft: rgba(239, 68, 68, 0.14);
+  --cc-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Modo Amplo (580px) para Gestores Trabalharem com Mais Espaço */
+#livia-command-center.livia-panel-wide {
+  width: 580px !important;
+}
+
+/* Modo Recolhido / Minimizado */
+#livia-command-center.livia-panel-collapsed {
+  transform: translateX(100%) !important;
+}
+
+/* Aba Lateral de Reabertura quando o painel está minimizado */
+#livia-panel-launcher {
+  position: fixed !important;
+  top: 50% !important;
+  right: 0 !important;
+  transform: translateY(-50%) !important;
+  z-index: 2147483645 !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #3b82f6 !important;
+  border-right: none !important;
+  border-radius: 12px 0 0 12px !important;
+  padding: 14px 10px !important;
+  cursor: pointer !important;
+  box-shadow: -4px 4px 20px rgba(15, 23, 42, 0.25) !important;
+  display: none !important;
+  flex-direction: column !important;
   align-items: center !important;
   gap: 8px !important;
-  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%) !important;
-  color: #0b0f19 !important;
-  font-weight: 700 !important;
-  font-size: 13px !important;
-  padding: 8px 16px !important;
-  border-radius: 9999px !important;
-  border: none !important;
-  cursor: pointer !important;
-  box-shadow: 0 4px 14px rgba(0, 210, 255, 0.4) !important;
-  transition: all 0.25s ease !important;
-  z-index: 99999 !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  transition: padding 0.2s ease !important;
 }
 
-.livia-btn-inline:hover {
-  transform: translateY(-2px) scale(1.02) !important;
-  box-shadow: 0 6px 20px rgba(0, 210, 255, 0.6) !important;
+#livia-panel-launcher:hover {
+  padding-right: 16px !important;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
 }
 
-.livia-btn-inline:active {
-  transform: translateY(0) !important;
+#livia-panel-launcher.visible {
+  display: flex !important;
 }
 
-/* Botão secundário (outline) */
-.livia-btn-secondary {
-  background: #151c2c !important;
-  color: #00d2ff !important;
-  border: 1px solid rgba(0, 210, 255, 0.5) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+/* Cabeçalho Executivo do Painel */
+.livia-cc-header {
+  background: var(--cc-header-bg) !important;
+  color: #ffffff !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  flex-shrink: 0 !important;
 }
 
-.livia-btn-secondary:hover {
-  background: #1e283d !important;
-  border-color: #00d2ff !important;
-}
-
-/* Botão Flutuante (Floating Action Button) */
-.livia-fab {
-  position: fixed !important;
-  bottom: 24px !important;
-  right: 24px !important;
-  z-index: 999999 !important;
+.livia-cc-brand {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  background: linear-gradient(135deg, #0b0f19 0%, #151c2c 100%) !important;
-  border: 1px solid rgba(0, 210, 255, 0.4) !important;
-  padding: 10px 18px !important;
-  border-radius: 9999px !important;
-  color: #f0f4f8 !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 210, 255, 0.3) !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.livia-fab:hover {
-  transform: translateY(-3px) scale(1.03) !important;
-  border-color: #00d2ff !important;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 210, 255, 0.5) !important;
-}
-
-.livia-fab-icon {
-  width: 22px !important;
-  height: 22px !important;
-  border-radius: 50% !important;
-  background: linear-gradient(135deg, #00d2ff 0%, #8a2be2 100%) !important;
+.livia-cc-brand-badge {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #2563eb 0%, #10b981 100%) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: white !important;
-  font-size: 12px !important;
-  font-weight: bold !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4) !important;
 }
 
-/* Modal flutuante da Lívia */
+.livia-cc-title {
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.2px !important;
+  line-height: 1.2 !important;
+}
+
+.livia-cc-subtitle {
+  font-size: 11px !important;
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+}
+
+.livia-cc-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.livia-cc-icon-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px !important;
+  padding: 5px 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.livia-cc-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* Barra de Seleção de Empresa & Ações Rápidas */
+.livia-cc-client-bar {
+  background: var(--cc-surface) !important;
+  padding: 12px 14px 10px 14px !important;
+  border-bottom: 1px solid var(--cc-border) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+.livia-cc-client-selector-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.livia-cc-input-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  color: var(--cc-text-muted) !important;
+}
+
+.livia-badge-client {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  padding: 2px 8px !important;
+  border-radius: 9999px !important;
+  background: var(--cc-emerald-soft) !important;
+  color: var(--cc-emerald) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  letter-spacing: 0.3px !important;
+}
+
+.livia-badge-prospect {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  padding: 2px 8px !important;
+  border-radius: 9999px !important;
+  background: var(--cc-warn-soft) !important;
+  color: var(--cc-warn) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  letter-spacing: 0.3px !important;
+}
+
+.livia-pro-pill {
+  background: linear-gradient(135deg, #2563eb 0%, #10b981 100%) !important;
+  color: #ffffff !important;
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+  padding: 2px 7px !important;
+  border-radius: 9999px !important;
+  letter-spacing: 0.6px !important;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.35) !important;
+}
+
+.livia-cc-select {
+  flex: 1 !important;
+  background: var(--cc-surface-alt) !important;
+  color: var(--cc-text) !important;
+  border: 1px solid var(--cc-border-strong) !important;
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.15s ease !important;
+}
+
+.livia-cc-select:focus {
+  border-color: var(--cc-accent) !important;
+  box-shadow: 0 0 0 3px var(--cc-accent-soft) !important;
+}
+
+.livia-cc-icon-action {
+  background: var(--cc-surface-alt) !important;
+  border: 1px solid var(--cc-border-strong) !important;
+  color: var(--cc-text) !important;
+  border-radius: 9px !important;
+  padding: 8px 11px !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.livia-cc-icon-action:hover {
+  background: var(--cc-accent-soft) !important;
+  border-color: var(--cc-accent) !important;
+  transform: rotate(45deg);
+}
+
+/* Grid de Ações Rápidas */
+.livia-cc-quick-actions-grid {
+  display: grid !important;
+  grid-template-columns: 1.45fr 1.05fr 0.7fr !important;
+  gap: 7px !important;
+}
+
+.livia-btn-action-primary {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28) !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.livia-btn-action-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4) !important;
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+}
+
+.livia-btn-action-secondary {
+  background: var(--cc-surface-alt) !important;
+  color: var(--cc-text) !important;
+  border: 1px solid var(--cc-border-strong) !important;
+  border-radius: 8px !important;
+  padding: 8px 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.livia-btn-action-secondary:hover {
+  background: var(--cc-surface) !important;
+  border-color: var(--cc-accent) !important;
+  color: var(--cc-accent) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Caixa de Saúde do Perfil */
+.livia-cc-score-box {
+  background: var(--cc-surface-alt) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 11.5px !important;
+  gap: 8px !important;
+}
+
+/* Segmented Control de Abas */
+.livia-cc-tabs-wrapper {
+  background: var(--cc-surface) !important;
+  padding: 6px 14px 10px 14px !important;
+  border-bottom: 1px solid var(--cc-border) !important;
+  flex-shrink: 0 !important;
+}
+
+.livia-cc-tabs {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  background: var(--cc-surface-alt) !important;
+  padding: 3px !important;
+  border-radius: 11px !important;
+  gap: 3px !important;
+  border: 1px solid var(--cc-border) !important;
+}
+
+.livia-cc-tab {
+  background: transparent !important;
+  border: none !important;
+  color: var(--cc-text-muted) !important;
+  border-radius: 8px !important;
+  padding: 8px 2px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 2px !important;
+  transition: all 0.15s ease !important;
+  text-align: center !important;
+}
+
+.livia-cc-tab span.tab-icon {
+  font-size: 15px !important;
+}
+
+.livia-cc-tab:hover {
+  color: var(--cc-text) !important;
+}
+
+.livia-cc-tab.active {
+  background: var(--cc-surface) !important;
+  color: var(--cc-accent) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Chips Rápidos */
+.livia-chip-btn {
+  background: var(--cc-surface-alt, #f8fafc) !important;
+  border: 1px solid var(--cc-border-strong, #cbd5e1) !important;
+  color: var(--cc-text, #0f172a) !important;
+  border-radius: 9999px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+.livia-chip-btn:hover {
+  border-color: var(--cc-accent, #2563eb) !important;
+  color: var(--cc-accent, #2563eb) !important;
+  background: var(--cc-accent-soft, #eff6ff) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Corpo Rolável do Painel */
+.livia-cc-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+/* Cards Internos do Painel */
+.livia-cc-card {
+  background: var(--cc-surface) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-radius: 10px !important;
+  padding: 14px !important;
+  box-shadow: var(--cc-shadow) !important;
+}
+
+.livia-cc-card-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: var(--cc-text) !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+/* Itens de Auditoria dentro do Painel */
+.livia-cc-audit-item {
+  background: var(--cc-surface) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-left: 4px solid var(--cc-border-strong) !important;
+  border-radius: 8px !important;
+  padding: 11px 12px !important;
+  margin-bottom: 8px !important;
+  box-shadow: var(--cc-shadow) !important;
+  transition: transform 0.15s ease !important;
+}
+
+.livia-cc-audit-item.pass {
+  border-left-color: var(--cc-emerald) !important;
+}
+
+.livia-cc-audit-item.warn {
+  border-left-color: var(--cc-warn) !important;
+  background: var(--cc-warn-soft) !important;
+}
+
+.livia-cc-audit-item.fail {
+  border-left-color: var(--cc-fail) !important;
+  background: var(--cc-fail-soft) !important;
+}
+
+/* Inputs e Textareas dentro do Painel */
+.livia-cc-textarea,
+.livia-cc-input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: var(--cc-surface-alt) !important;
+  color: var(--cc-text) !important;
+  border: 1px solid var(--cc-border-strong) !important;
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  font-family: inherit !important;
+  outline: none !important;
+}
+
+.livia-cc-textarea:focus,
+.livia-cc-input:focus {
+  border-color: var(--cc-accent) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* Botões Executivos do Painel */
+.livia-btn-inline {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  padding: 7px 14px !important;
+  border-radius: 7px !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1) !important;
+  transition: all 0.18s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  text-decoration: none !important;
+  vertical-align: middle !important;
+}
+
+.livia-btn-inline:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25) !important;
+}
+
+.livia-btn-inline:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* Botão Verde Esmeralda para Automação ("Resolver Agora" / "Auto-Publicar") */
+.livia-btn-auto {
+  background: #059669 !important;
+  color: #ffffff !important;
+}
+
+.livia-btn-auto:hover {
+  background: #047857 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+}
+
+/* Botão Secundário (Neutro / Outline) */
+.livia-btn-secondary {
+  background: var(--cc-surface, #ffffff) !important;
+  color: var(--cc-text, #0f172a) !important;
+  border: 1px solid var(--cc-border-strong, #cbd5e1) !important;
+  box-shadow: none !important;
+}
+
+.livia-btn-secondary:hover {
+  background: var(--cc-surface-alt, #f8fafc) !important;
+  border-color: var(--cc-accent, #2563eb) !important;
+  color: var(--cc-accent, #2563eb) !important;
+}
+
+/* Rodapé Fixo do Painel */
+.livia-cc-footer {
+  background: var(--cc-surface) !important;
+  border-top: 1px solid var(--cc-border) !important;
+  padding: 8px 16px !important;
+  font-size: 11px !important;
+  color: var(--cc-text-muted) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-shrink: 0 !important;
+}
+
+/* ==========================================================================
+   2. COMPONENTES INLINE (MODAIS DO GOOGLE, INSTAGRAM & TOASTS)
+   ========================================================================== */
+
+.livia-fab {
+  position: fixed !important;
+  bottom: 85px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: #0f172a !important;
+  border: 1px solid #3b82f6 !important;
+  padding: 10px 18px !important;
+  border-radius: 9999px !important;
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.livia-review-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 8px 0 !important;
+  flex-wrap: wrap !important;
+}
+
+.livia-mode-select {
+  background: var(--cc-surface, #ffffff) !important;
+  color: var(--cc-text, #0f172a) !important;
+  border: 1px solid var(--cc-border-strong, #cbd5e1) !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
+.livia-char-counter {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+}
+
+.livia-char-counter.good { color: #059669 !important; }
+.livia-char-counter.warn { color: #d97706 !important; }
+.livia-char-counter.danger { color: #dc2626 !important; }
+
+/* Modais de apoio (ex: Importação Rápida) */
 .livia-modal-backdrop {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background: rgba(11, 15, 25, 0.8) !important;
-  backdrop-filter: blur(6px) !important;
-  z-index: 1000000 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 2147483646 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
 .livia-modal {
-  background: #0b0f19 !important;
-  border: 1px solid rgba(0, 210, 255, 0.4) !important;
-  border-radius: 16px !important;
-  width: 520px !important;
-  max-width: 90vw !important;
-  padding: 24px !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 210, 255, 0.2) !important;
-  color: #f0f4f8 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 14px !important;
+  width: 580px !important;
+  max-width: 92vw !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  padding: 22px !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3) !important;
+  color: #0f172a !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-  animation: liviaFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-@keyframes liviaFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
 }
 
 .livia-modal-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  margin-bottom: 16px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-bottom: 14px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   padding-bottom: 12px !important;
 }
 
 .livia-modal-title {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #00d2ff !important;
+  gap: 8px !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
 }
 
 .livia-modal-close {
   background: transparent !important;
   border: none !important;
-  color: #8892b0 !important;
-  font-size: 20px !important;
+  color: #64748b !important;
+  font-size: 22px !important;
   cursor: pointer !important;
-  transition: color 0.2s !important;
 }
 
-.livia-modal-close:hover {
-  color: #ffffff !important;
-}
-
-.livia-modal-body textarea {
-  width: 100% !important;
-  box-sizing: border-box !important;
-  background: #151c2c !important;
-  border: 1px solid rgba(0, 210, 255, 0.3) !important;
-  border-radius: 8px !important;
-  color: #ffffff !important;
-  padding: 12px !important;
-  font-size: 14px !important;
+.livia-modal-body {
+  font-size: 13.5px !important;
   line-height: 1.5 !important;
-  resize: vertical !important;
-  min-height: 140px !important;
-  margin-bottom: 16px !important;
-  font-family: inherit !important;
+  color: #334155 !important;
 }
 
 .livia-modal-actions {
   display: flex !important;
   justify-content: flex-end !important;
-  gap: 12px !important;
+  gap: 10px !important;
+  margin-top: 16px !important;
 }
 
-/* Toast de Notificação */
+/* Toast Executivo */
 .livia-toast {
   position: fixed !important;
-  bottom: 30px !important;
-  left: 50% !important;
+  bottom: 24px !important;
+  left: 35% !important;
   transform: translateX(-50%) !important;
-  background: #151c2c !important;
+  background: #0f172a !important;
   color: #ffffff !important;
-  border: 1px solid #00d2ff !important;
-  padding: 12px 24px !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 210, 255, 0.4) !important;
-  font-size: 14px !important;
+  border: 1px solid #3b82f6 !important;
+  padding: 12px 22px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.45) !important;
+  font-size: 13.5px !important;
   font-weight: 600 !important;
-  z-index: 10000000 !important;
+  z-index: 2147483647 !important;
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  animation: liviaSlideUp 0.3s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
-@keyframes liviaSlideUp {
-  from { opacity: 0; transform: translate(-50%, 20px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+/* ========================================================
+   GEO-GRID DE BAIRROS & RANKING LOCAL (ESTILO LOCAL FALCON)
+   ======================================================== */
+.livia-geogrid-matrix {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+  background: var(--cc-surface-alt) !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1.5px solid var(--cc-border) !important;
+  margin: 10px 0 !important;
+}
+
+.livia-geogrid-cell {
+  background: var(--cc-surface) !important;
+  border: 1.5px solid var(--cc-border) !important;
+  border-radius: 10px !important;
+  padding: 10px 6px !important;
+  text-align: center !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 82px !important;
+  transition: all 0.18s ease !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.livia-geogrid-cell:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--cc-accent) !important;
+}
+
+.livia-geogrid-pin {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+  color: #ffffff !important;
+  margin-bottom: 6px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  flex-shrink: 0 !important;
+}
+
+.livia-geogrid-pin.top3 {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45) !important;
+}
+
+.livia-geogrid-pin.page1 {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.45) !important;
+}
+
+.livia-geogrid-pin.invisible {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.45) !important;
+}
+
+.livia-geogrid-cell-title {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: var(--cc-text) !important;
+  line-height: 1.2 !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.livia-geogrid-cell-dist {
+  font-size: 9.5px !important;
+  color: var(--cc-text-muted) !important;
+  font-weight: 600 !important;
+  margin-top: 2px !important;
+}
+
+.livia-geogrid-metrics-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+  margin: 10px 0 !important;
+}
+
+.livia-geogrid-stat-box {
+  background: var(--cc-surface-alt) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-radius: 9px !important;
+  padding: 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.livia-geogrid-bairro-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 8px 10px !important;
+  background: var(--cc-surface-alt) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-radius: 8px !important;
+  margin-bottom: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.livia-geogrid-bairro-item:hover {
+  background: var(--cc-surface) !important;
+  border-color: var(--cc-border-strong) !important;
+}
+
+
+
+/* --- LEADS TURBO (GOOGLE PLACES API) --- */
+.livia-api-lead-card {
+  padding: 10px 12px !important;
+  background: var(--cc-surface-alt) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-radius: 9px !important;
+  margin-bottom: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.livia-api-lead-card:hover {
+  border-color: var(--cc-accent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.livia-lead-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+.livia-lead-tag-primary {
+  background: rgba(0, 210, 255, 0.12) !important;
+  color: #0284c7 !important;
+}
+
+.livia-theme-dark .livia-lead-tag-primary {
+  color: #38bdf8 !important;
+}
+
+.livia-lead-tag-hidden {
+  background: rgba(139, 92, 246, 0.12) !important;
+  color: #7c3aed !important;
+  border: 1px solid rgba(139, 92, 246, 0.25) !important;
+}
+
+.livia-theme-dark .livia-lead-tag-hidden {
+  color: #a78bfa !important;
+}
+
+.livia-lead-tag-alert {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+}
+
+.livia-pulse-loader {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 16px !important;
+  color: var(--cc-accent) !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  animation: liviaPulseAnim 1.4s ease-in-out infinite !important;
+}
+
+@keyframes liviaPulseAnim {
+  0%, 100% { opacity: 0.55; transform: scale(0.99); }
+  50% { opacity: 1; transform: scale(1.01); }
+}
+
+
+/* --- PLANO DE AÇÃO TOP 1 (ALGORITMO DO GOOGLE) --- */
+.livia-plan-container {
+  margin-top: 14px !important;
+}
+
+.livia-plan-tier-card {
+  background: var(--cc-surface) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-radius: 10px !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.livia-plan-tier-card.tier-critical {
+  border-left: 4px solid #ef4444 !important;
+}
+
+.livia-plan-tier-card.tier-growth {
+  border-left: 4px solid #f59e0b !important;
+}
+
+.livia-plan-tier-card.tier-domination {
+  border-left: 4px solid #10b981 !important;
+}
+
+.livia-plan-tier-header {
+  padding: 10px 12px !important;
+  background: var(--cc-surface-alt) !important;
+  border-bottom: 1px solid var(--cc-border) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.livia-plan-tier-title {
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  color: var(--cc-text) !important;
+}
+
+.livia-plan-tier-sub {
+  font-size: 10.5px !important;
+  color: var(--cc-text-muted) !important;
+  margin-top: 2px !important;
+}
+
+.livia-plan-item {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid var(--cc-border) !important;
+  transition: all 0.15s ease !important;
+}
+
+.livia-plan-item:last-child {
+  border-bottom: none !important;
+}
+
+.livia-plan-item-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+}
+
+.livia-plan-item-title {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--cc-text) !important;
+  line-height: 1.3 !important;
+}
+
+.livia-plan-why-box {
+  background: rgba(99, 102, 241, 0.06) !important;
+  border-left: 3px solid #6366f1 !important;
+  border-radius: 4px !important;
+  padding: 6px 8px !important;
+  margin: 6px 0 !important;
+  font-size: 11px !important;
+  color: var(--cc-text) !important;
+  line-height: 1.35 !important;
+}
+
+.livia-theme-dark .livia-plan-why-box {
+  background: rgba(99, 102, 241, 0.14) !important;
+  color: #e2e8f0 !important;
+}
+
+.livia-plan-action-text {
+  font-size: 11px !important;
+  color: var(--cc-text-secondary) !important;
+  line-height: 1.35 !important;
+  margin-top: 4px !important;
 }

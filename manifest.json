@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Lívia Copilot — SEO Local & Redes Sociais (ConectWeb)",
-  "version": "1.0.0",
-  "description": "Conecte Instagram, Facebook e Google Meu Negócio à inteligência artificial da Lívia da ConectWeb. Responda avaliações e crie posts locais em 1 clique.",
+  "name": "Lívia Copilot Pro — SEO Local & Google Meu Negócio (ConectWeb)",
+  "version": "2.0.0",
+  "description": "A extensão mais avançada para Google Meu Negócio: gestão multi-empresas, respostas a avaliações com gestão de crise, otimizador de 750 chars, Q&A e integração com Instagram e Facebook.",
   "author": "ConectWeb",
   "icons": {
     "16": "icons/icon16.png",
@@ -11,7 +11,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Lívia Copilot - ConectWeb",
+    "default_title": "Lívia Copilot Pro - ConectWeb",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -25,10 +25,17 @@
     "contextMenus"
   ],
   "host_permissions": [
+    "https://maps.googleapis.com/*",
+    "https://places.googleapis.com/*",
     "https://business.google.com/*",
     "https://*.google.com/*",
+    "https://google.com/*",
     "https://*.instagram.com/*",
+    "https://instagram.com/*",
     "https://*.facebook.com/*",
+    "https://facebook.com/*",
+    "https://*.tiktok.com/*",
+    "https://tiktok.com/*",
     "https://livia.conectweb.online/*",
     "https://conectweb.online/*",
     "http://localhost:*/*"
@@ -42,15 +49,25 @@
       "matches": [
         "https://business.google.com/*",
         "https://www.google.com/search*",
-        "https://www.google.com.br/search*"
+        "https://www.google.com.br/search*",
+        "https://google.com/search*",
+        "https://google.com.br/search*",
+        "https://www.google.com/maps*",
+        "https://www.google.com.br/maps*",
+        "https://google.com/maps*",
+        "https://google.com.br/maps*"
       ],
       "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-gbp.js"],
       "css": ["scripts/content-style.css"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     },
     {
       "matches": [
-        "https://*.instagram.com/*"
+        "https://*.instagram.com/*",
+        "https://instagram.com/*",
+        "http://*.instagram.com/*",
+        "http://instagram.com/*"
       ],
       "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-instagram.js"],
       "css": ["scripts/content-style.css"],
@@ -58,9 +75,21 @@
     },
     {
       "matches": [
-        "https://*.facebook.com/*"
+        "https://*.facebook.com/*",
+        "https://facebook.com/*",
+        "http://*.facebook.com/*",
+        "http://facebook.com/*"
       ],
       "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-facebook.js"],
+      "css": ["scripts/content-style.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.tiktok.com/*",
+        "https://tiktok.com/*"
+      ],
+      "js": ["lib/providers.js", "lib/livia-api.js", "scripts/content-tiktok.js"],
       "css": ["scripts/content-style.css"],
       "run_at": "document_idle"
     }

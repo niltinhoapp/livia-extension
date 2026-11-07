@@ -3,42 +3,313 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configurações — Lívia Copilot (ConectWeb)</title>
+  <title>Lívia Copilot Pro — Painel de Gestão e Onboarding de Empresas</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <header class="header">
       <div class="brand">
         <div class="logo">✨</div>
         <div>
-          <h1>Lívia Copilot — Configurações</h1>
-          <p class="subtitle">Personalize a inteligência artificial da Lívia para a sua empresa e redes sociais.</p>
+          <h1>Lívia Copilot Pro — Gestão Multi-Clientes</h1>
+          <p class="subtitle">Onboarding de Empresas e Calibração de Inteligência Artificial para Google Meu Negócio.</p>
         </div>
       </div>
-      <div class="header-badge">ConectWeb Inteligência</div>
+      <div class="header-badge">ConectWeb Enterprise</div>
     </header>
 
-    <main class="content">
-      <!-- Seção 1: Conexão com a API da Lívia -->
+    <!-- Tabs Navigation -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-businesses">🏢 Minhas Empresas / Clientes</button>
+      <button class="tab-btn" data-tab="tab-onboarding" id="btn-tab-onboarding">➕ Onboard Nova Empresa</button>
+      <button class="tab-btn" data-tab="tab-whitelabel" id="btn-tab-whitelabel">🏷️ Marca da Agência (White-Label)</button>
+      <button class="tab-btn" data-tab="tab-license" id="btn-tab-license">💎 Licença & Planos</button>
+      <button class="tab-btn" data-tab="tab-server">🔑 Servidor da Lívia & API</button>
+      <button class="tab-btn" data-tab="tab-channels">🌐 Canais & Automações</button>
+    </nav>
+
+    <!-- ABA 1: Lista de Empresas Cadastradas -->
+    <main id="tab-businesses" class="tab-content active">
       <section class="card">
         <div class="card-header">
-          <h2>🔑 Conexão com o Servidor da Lívia</h2>
+          <h2>🏢 Perfis de Empresas Conectadas</h2>
+          <span class="card-tag" id="biz-counter">0 Empresas</span>
+        </div>
+        <p class="card-desc">
+          Gerencie múltiplos clientes e filiais da sua agência. A Lívia detecta e alterna automaticamente entre as empresas quando você navega no Google Meu Negócio!
+        </p>
+
+        <div class="biz-toolbar">
+          <button type="button" class="btn btn-primary" id="btn-go-onboarding">
+            <span>➕</span> Cadastrar / Onboardar Nova Empresa
+          </button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary" id="btn-export-json">
+              <span>📤</span> Exportar Backup JSON
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-import-json">
+              <span>📥</span> Importar JSON
+            </button>
+            <input type="file" id="file-import-json" accept=".json" style="display: none;">
+          </div>
+        </div>
+
+        <div class="biz-grid" id="biz-grid-container">
+          <!-- Renderizado dinamicamente via options.js -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ABA 2: Formulário Completo de Onboarding (Inspirado no app.localmarketingmanager.com/onboarding/businesses) -->
+    <main id="tab-onboarding" class="tab-content">
+      <section class="card">
+        <div class="card-header">
+          <h2 id="onboarding-form-title">➕ Onboarding de Empresa / Cliente</h2>
+          <span class="card-tag">Google Meu Negócio</span>
+        </div>
+        <p class="card-desc">
+          Insira os dados cadastrais e as diretrizes de SEO Local para que a Lívia gere postagens, descrições e respostas de avaliações perfeitamente calibradas.
+        </p>
+
+        <form id="onboarding-form">
+          <input type="hidden" id="edit-biz-id" value="">
+
+          <div class="form-grid">
+            <!-- 1. Identificação -->
+            <div class="form-group full-width">
+              <label for="bizName">Nome da Empresa / Estabelecimento: *</label>
+              <input type="text" id="bizName" required placeholder="Ex: Pizzaria Bela Vista, Clínica Odonto Mais, ConectWeb Soluções">
+              <small>Nome exato como aparece na ficha do Google Meu Negócio.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="bizNiche">Segmento / Ramo de Atuação: *</label>
+              <input type="text" id="bizNiche" required placeholder="Ex: Pizzaria Artesanal e Delivery, Clínica Odontológica">
+            </div>
+
+            <div class="form-group">
+              <label for="bizPrimaryCategory">Categoria Primária no Google Meu Negócio: *</label>
+              <input type="text" id="bizPrimaryCategory" required placeholder="Ex: Pizzaria, Dentista, Agência de Marketing">
+              <small>A categoria primária é o fator #1 de ranqueamento no Google Maps.</small>
+            </div>
+
+            <!-- 2. Localização & Região -->
+            <div class="form-group">
+              <label for="bizCity">Cidade Principal: *</label>
+              <input type="text" id="bizCity" required placeholder="Ex: Macatuba">
+            </div>
+
+            <div class="form-group">
+              <label for="bizNeighborhood">Bairro Principal / Região: *</label>
+              <input type="text" id="bizNeighborhood" required placeholder="Ex: Centro / Jardim Bocayuva">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="bizServiceAreas">Áreas de Atendimento e Raio:</label>
+              <input type="text" id="bizServiceAreas" placeholder="Ex: Macatuba, Lençóis Paulista, Pederneiras e Região">
+            </div>
+
+            <!-- 3. Palavras-Chave e Serviços -->
+            <div class="form-group full-width">
+              <label for="bizServices">Principais Serviços / Produtos Oferecidos (separados por vírgula):</label>
+              <input type="text" id="bizServices" placeholder="Ex: Pizza Artesanal, Forno a Lenha, Delivery Rápido, Massas, Sobremesas">
+              <small>Usados para enriquecer a descrição e respostas de avaliações da Lívia.</small>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="bizKeywords">Palavras-Chave Foco para Busca Local (separadas por vírgula):</label>
+              <input type="text" id="bizKeywords" placeholder="Ex: melhor pizza bauru, pizza delivery centro, disk pizza">
+            </div>
+
+            <!-- 4. Contato Comercial & Conversão -->
+            <div class="form-group">
+              <label for="bizWhatsapp">WhatsApp Comercial com DDD: *</label>
+              <input type="text" id="bizWhatsapp" required placeholder="Ex: 5514996988997">
+              <small>Usado na chamada para ação (CTA) dos posts locais.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="bizWebsite">Website / Link de Agendamento:</label>
+              <input type="url" id="bizWebsite" placeholder="Ex: https://minhaempresa.com.br">
+            </div>
+
+            <!-- 5. Políticas de IA e Tom de Voz -->
+            <div class="form-group">
+              <label for="bizTone">Tom de Voz da IA:</label>
+              <select id="bizTone">
+                <option value="amigavel">Amigável, Acolhedor e Prestativo (Padrão)</option>
+                <option value="profissional">Profissional, Técnico e Formal (Clínicas / Escritórios)</option>
+                <option value="persuasivo">Persuasivo, Comercial e com Foco em Vendas</option>
+                <option value="direto">Curto, Direto e Objetivo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bizPolicy">Política de Resposta a Avaliações:</label>
+              <select id="bizPolicy">
+                <option value="balanced">Equilibrada (SEO em elogios + Empatia em críticas)</option>
+                <option value="conciliatory">Conciliadora de Crise (Foco absoluto em desescalar conflito)</option>
+                <option value="assertive">Assertiva e Comercial (Foco em autoridade e retorno)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="save-bar">
+            <button type="submit" class="btn btn-primary" id="btn-save-biz">
+              <span>💾</span> Salvar Perfil da Empresa
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="display: none;">
+              Cancelar Edição
+            </button>
+            <span id="biz-save-msg" class="status-msg"></span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- ABA WHITE-LABEL: Marca da Agência -->
+    <main id="tab-whitelabel" class="tab-content">
+      <section class="card">
+        <div class="card-header">
+          <h2>🏷️ Personalização de Marca da sua Agência (White-Label)</h2>
+          <span class="card-tag">Exclusivo Agência Pro</span>
+        </div>
+        <p class="card-desc">
+          Configure a identidade visual da sua agência ou consultoria. Todos os Laudos em PDF, auditorias técnicas e scripts de WhatsApp serão gerados com o nome, contato e cores da sua própria empresa!
+        </p>
+
+        <form id="whitelabel-form">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="agencyNameInput">Nome Comercial da sua Agência / Consultoria: *</label>
+              <input type="text" id="agencyNameInput" required placeholder="Ex: Alfa Marketing Digital, Nexus SEO Local">
+              <small>Aparecerá no cabeçalho e rodapé do Laudo PDF gerado para seus clientes.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="agencyWhatsappInput">WhatsApp Comercial da Agência (com DDD): *</label>
+              <input type="text" id="agencyWhatsappInput" required placeholder="Ex: 5511999998888">
+              <small>Usado na chamada para ação (CTA) do rodapé do Laudo PDF e nos scripts comerciais.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="agencyWebsiteInput">Website / Link de Apresentação:</label>
+              <input type="url" id="agencyWebsiteInput" placeholder="Ex: https://suaagencia.com.br">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="agencySloganInput">Slogan / Especialidade da Agência:</label>
+              <input type="text" id="agencySloganInput" placeholder="Ex: Especialistas em SEO Local, Google Meu Negócio & Performance">
+            </div>
+
+            <div class="form-group">
+              <label for="agencyColorInput">Cor Primária do Laudo PDF:</label>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="color" id="agencyColorInput" value="#0284c7" style="width: 50px; height: 38px; padding: 2px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2);">
+                <input type="text" id="agencyColorHex" value="#0284c7" style="flex: 1;" placeholder="#0284c7">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="agencyLogoUrlInput">URL do Logotipo da Agência (opcional):</label>
+              <input type="url" id="agencyLogoUrlInput" placeholder="https://suaagencia.com.br/logo.png">
+            </div>
+          </div>
+
+          <div class="card-actions" style="margin-top: 18px;">
+            <button type="submit" class="btn btn-primary" id="btn-save-whitelabel">
+              <span>💾</span> Salvar Marca da Agência
+            </button>
+            <span id="whitelabel-status" class="status-msg"></span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- ABA LICENÇA: Gestor de Licença Comercial -->
+    <main id="tab-license" class="tab-content">
+      <section class="card">
+        <div class="card-header">
+          <h2>💎 Gestão de Licença & Acesso Pro</h2>
+          <span class="card-tag" id="license-badge-tag">Plano Ativo</span>
+        </div>
+        <p class="card-desc">
+          Verifique o status do seu acesso à suíte Lívia Copilot Pro, seus recursos liberados e ative novas licenças ou planos de expansão.
+        </p>
+
+        <div style="background: linear-gradient(135deg, rgba(0, 210, 255, 0.1) 0%, rgba(11, 15, 25, 0.95) 100%); border: 1px solid rgba(0, 210, 255, 0.35); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #00d2ff; font-weight: 800;">STATUS DA LICENÇA</span>
+              <h3 id="license-plan-title" style="margin: 2px 0 0 0; font-size: 20px; color: #ffffff;">Plano Agência Ilimitado</h3>
+            </div>
+            <div style="text-align: right;">
+              <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(16, 185, 129, 0.2); color: #10b981; font-weight: 800; font-size: 12px; border: 1px solid #10b981;">
+                🟢 Ativo & Vitalício
+              </span>
+            </div>
+          </div>
+
+          <div style="font-size: 12.5px; color: #8892b0; margin-bottom: 16px;">
+            Chave Atual: <code id="license-current-key" style="background: #000; padding: 2px 8px; border-radius: 4px; color: #00d2ff;">LIVIA-AGENCY-PRO-2026</code>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 12.5px; color: #cbd5e1;">
+            <div style="display: flex; align-items: center; gap: 6px;">✅ <strong>Empresas Ilimitadas</strong></div>
+            <div style="display: flex; align-items: center; gap: 6px;">✅ <strong>Laudo PDF White-Label</strong></div>
+            <div style="display: flex; align-items: center; gap: 6px;">✅ <strong>TikTok + Insta + Face</strong></div>
+            <div style="display: flex; align-items: center; gap: 6px;">✅ <strong>Gestão de Crise em Reviews</strong></div>
+            <div style="display: flex; align-items: center; gap: 6px;">✅ <strong>Otimizador 750 Chars GMN</strong></div>
+            <div style="display: flex; align-items: center; gap: 6px;">✅ <strong>Scripts WhatsApp de Venda</strong></div>
+          </div>
+        </div>
+
+        <form id="license-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="licenseEmailInput">E-mail Cadastrado na Compra:</label>
+              <input type="email" id="licenseEmailInput" placeholder="ex: contato@suaagencia.com.br">
+              <small>E-mail utilizado no checkout da Kiwify / Hotmart / Asaas.</small>
+            </div>
+            <div class="form-group">
+              <label for="licenseKeyInput">Chave de Licença (License Key): *</label>
+              <input type="text" id="licenseKeyInput" required placeholder="Ex: LIVIA-AGY-9F8A-77C2">
+              <small>Código enviado por e-mail ou WhatsApp após a confirmação do pedido.</small>
+            </div>
+          </div>
+
+          <div class="card-actions" style="margin-top: 14px;">
+            <button type="submit" class="btn btn-primary" id="btn-activate-license">
+              <span>⚡</span> Validar e Ativar Chave
+            </button>
+            <span id="license-status-msg" class="status-msg"></span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- ABA 3: Conexão com a API da Lívia -->
+    <main id="tab-server" class="tab-content">
+      <section class="card">
+        <div class="card-header">
+          <h2>🔑 Conexão com o Servidor da Lívia (ConectWeb)</h2>
           <span class="card-tag">livia.conectweb.online</span>
         </div>
-        <p class="card-desc">Conecte a extensão ao seu servidor oficial da Lívia para usar seu modelo de IA e prompts personalizados.</p>
+        <p class="card-desc">Conecte a extensão ao servidor oficial da Lívia para utilizar prompts corporativos em nuvem e sincronizar perfis.</p>
 
         <div class="form-grid">
           <div class="form-group full-width">
             <label for="liviaApiUrl">URL Base da API da Lívia:</label>
             <input type="text" id="liviaApiUrl" placeholder="https://livia.conectweb.online/api">
-            <small>Endpoint onde roda o backend da Lívia da ConectWeb.</small>
+            <small>Endpoint onde roda a API da Lívia da ConectWeb.</small>
           </div>
 
           <div class="form-group full-width">
             <label for="liviaApiToken">Token Secreto de Acesso (Bearer Token):</label>
             <input type="password" id="liviaApiToken" placeholder="Insira o token de segurança da Lívia">
-            <small>Chave configurada no arquivo de ambiente da Lívia (ex: LIVIA_API_SECRET).</small>
+            <small>Chave de autorização configurada no servidor da Lívia (ex: LIVIA_API_SECRET).</small>
           </div>
         </div>
 
@@ -46,71 +317,56 @@
           <button type="button" class="btn btn-secondary" id="btn-test-connection">
             <span>⚡</span> Testar Conexão com a Lívia
           </button>
+          <button type="button" class="btn btn-primary" id="btn-save-server">
+            <span>💾</span> Salvar Configurações de API
+          </button>
           <span id="connection-status" class="status-msg"></span>
         </div>
       </section>
 
-      <!-- Seção 2: Contexto da Empresa para SEO Local -->
-      <section class="card">
+      <section class="card" style="margin-top: 18px;">
         <div class="card-header">
-          <h2>📍 Contexto da Empresa (SEO Local)</h2>
-          <span class="card-tag">Google Meu Negócio</span>
+          <h2>⚡ Google Places API (Modo Turbo de Prospecção & Concorrentes)</h2>
+          <span class="card-tag" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">$200 Créditos Grátis/Mês</span>
         </div>
-        <p class="card-desc">Essas informações são usadas pela Lívia para injetar palavras-chave de localização nos posts e respostas a avaliações.</p>
+        <p class="card-desc">Conecte sua chave oficial do <strong>Google Places API (Google Cloud)</strong> para desbloquear a prospecção em lote com telefones formatados, websites oficiais e as <strong>categorias secundárias secretas</strong> que o Google oculta na interface visual.</p>
 
         <div class="form-grid">
-          <div class="form-group">
-            <label for="companyName">Nome da Empresa / Estabelecimento:</label>
-            <input type="text" id="companyName" placeholder="Ex: ConectWeb Soluções Digitais">
+          <div class="form-group full-width">
+            <label for="googlePlacesApiKey">Chave de API do Google Places (API Key):</label>
+            <input type="password" id="googlePlacesApiKey" placeholder="AIzaSy...">
+            <small>Crie sua chave gratuita no <a href="https://console.cloud.google.com/google/maps-apis/overview" target="_blank" style="color: #00d2ff; text-decoration: underline;">Google Cloud Console</a> e ative a "Places API". O Google disponibiliza \$200 de crédito gratuito todo mês.</small>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label for="companyNiche">Segmento / Ramo de Atuação:</label>
-            <input type="text" id="companyNiche" placeholder="Ex: Pizzaria Artesanal, Clínica Médica, Loja de Roupas">
-          </div>
-
-          <div class="form-group">
-            <label for="companyCity">Cidade Principal:</label>
-            <input type="text" id="companyCity" placeholder="Ex: Bauru">
-          </div>
-
-          <div class="form-group">
-            <label for="companyNeighborhood">Bairro Principal / Região:</label>
-            <input type="text" id="companyNeighborhood" placeholder="Ex: Centro / Altos da Cidade">
-          </div>
-
-          <div class="form-group">
-            <label for="companyWhatsapp">WhatsApp Comercial com DDD:</label>
-            <input type="text" id="companyWhatsapp" placeholder="Ex: 5514996988997">
-          </div>
-
-          <div class="form-group">
-            <label for="toneOfVoice">Tom de Voz da IA:</label>
-            <select id="toneOfVoice">
-              <option value="amigavel">Amigável, Acolhedor e Prestativo (Padrão)</option>
-              <option value="profissional">Profissional, Técnico e Formal</option>
-              <option value="persuasivo">Persuasivo, Comercial e com Foco em Vendas</option>
-              <option value="direto">Curto, Direto e Objetivo</option>
-            </select>
-          </div>
+        <div class="card-actions">
+          <button type="button" class="btn btn-secondary" id="btn-test-google-places">
+            <span>⚡</span> Testar Chave do Google Places
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-save-google-places">
+            <span>💾</span> Salvar Chave do Google
+          </button>
+          <span id="google-places-status" class="status-msg"></span>
         </div>
       </section>
+    </main>
 
-      <!-- Seção 3: Canais e Provedores Habilitados -->
+    <!-- ABA 4: Canais Sociais e Provedores -->
+    <main id="tab-channels" class="tab-content">
       <section class="card">
         <div class="card-header">
-          <h2>🌐 Canais de Redes Sociais</h2>
+          <h2>🌐 Canais de Redes Sociais & Automações</h2>
           <span class="card-tag">Multi-Plataforma</span>
         </div>
-        <p class="card-desc">Gerencie onde a Lívia injeta os botões de ação e conversão.</p>
+        <p class="card-desc">Plataformas integradas à inteligência artificial da Lívia Copilot.</p>
 
         <div class="channels-list">
           <div class="channel-item">
             <div class="channel-info">
               <span class="channel-icon">📍</span>
               <div>
-                <strong>Google Meu Negócio / Maps</strong>
-                <p>Respostas automáticas a avaliações e criador de posts locais.</p>
+                <strong>Google Meu Negócio & Busca do Google</strong>
+                <p>Dock flutuante, respostas de avaliações, otimizador de descrição 750 chars, posts locais e Q&A.</p>
               </div>
             </div>
             <span class="badge badge-active">Ativo</span>
@@ -121,7 +377,7 @@
               <span class="channel-icon">📸</span>
               <div>
                 <strong>Instagram Web</strong>
-                <p>Botão flutuante para capturar legenda e fotos e transformar em post do Google.</p>
+                <p>Captura de postagens com 1 clique e transformação em post de SEO Local.</p>
               </div>
             </div>
             <span class="badge badge-active">Ativo</span>
@@ -132,7 +388,18 @@
               <span class="channel-icon">👥</span>
               <div>
                 <strong>Facebook Web</strong>
-                <p>Captura de posts de páginas para republicação local.</p>
+                <p>Captura de posts de páginas do Facebook para reutilização no Google Meu Negócio.</p>
+              </div>
+            </div>
+            <span class="badge badge-active">Ativo</span>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-info">
+              <span class="channel-icon">🎵</span>
+              <div>
+                <strong>TikTok Web</strong>
+                <p>Captura de vídeos em alta resolução, capas e legendas virais para reciclagem em SEO Local no Google.</p>
               </div>
             </div>
             <span class="badge badge-active">Ativo</span>
@@ -143,21 +410,13 @@
               <span class="channel-icon">💼</span>
               <div>
                 <strong>LinkedIn</strong>
-                <p>Conversão de posts para o tom profissional B2B.</p>
+                <p>Conversão de posts institucionais para SEO Local e Google Meu Negócio.</p>
               </div>
             </div>
             <span class="badge badge-pending">Pronto para Ativar</span>
           </div>
         </div>
       </section>
-
-      <!-- Botão Salvar -->
-      <div class="save-bar">
-        <button type="button" class="btn btn-primary" id="btn-save">
-          <span>💾</span> Salvar Todas as Configurações
-        </button>
-        <span id="save-msg" class="status-msg"></span>
-      </div>
     </main>
   </div>
 
