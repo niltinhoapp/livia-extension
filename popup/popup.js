@@ -142,6 +142,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnGenerate.addEventListener('click', async () => {
     const action = quickActionType.value;
     const text = quickInput.value.trim();
+    const quickToneSelect = document.getElementById('quick-tone');
+    const selectedTone = quickToneSelect ? quickToneSelect.value : 'profissional';
 
     const originalBtn = btnGenerate.innerHTML;
     btnGenerate.innerHTML = `<span>⏳</span><span>Lívia processando...</span>`;
@@ -157,10 +159,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           reviewerName: 'Cliente',
           stars: isNegative ? 2 : 5,
           reviewText: text,
-          mode: isNegative ? 'crisis' : 'smart'
+          mode: isNegative ? 'crisis' : (selectedTone === 'direto' ? 'short' : 'smart')
         });
         output = res.reply || 'Erro ao gerar resposta.';
-        resultTitle.innerText = isNegative ? '🛡️ Resposta de Gestão de Crise:' : '✨ Resposta Otimizada com SEO Local:';
+        resultTitle.innerText = isNegative ? '🛡️ Resposta de Gestão de Crise:' : `✨ Resposta Otimizada (${selectedTone}):`;
       } else if (action === 'geogrid') {
         const geo = window.LiviaApi.generateGeoGridRanking(currentBusinessData?.activeBusiness, {
           keyword: text || ''
@@ -195,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         const res = await window.LiviaApi.transformPostForLocalSEO(fakePost);
         output = res.text || 'Erro ao gerar postagem.';
-        resultTitle.innerText = '📝 Post Otimizado para o Google Meu Negócio:';
+        resultTitle.innerText = `📝 Post Otimizado (${selectedTone}):`;
       }
 
       resultText.innerText = output;
@@ -209,12 +211,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Copiar resultado
+  // Copiar resultado com feedback tátil
   btnCopy.addEventListener('click', () => {
     navigator.clipboard.writeText(resultText.innerText);
-    btnCopy.innerText = 'Copiado!';
+    const orig = btnCopy.innerText;
+    btnCopy.innerText = '✓ Copiado!';
+    btnCopy.style.background = '#10b981';
+    btnCopy.style.color = '#ffffff';
     setTimeout(() => {
-      btnCopy.innerText = 'Copiar';
-    }, 2000);
+      btnCopy.innerText = orig;
+      btnCopy.style.background = '';
+      btnCopy.style.color = '';
+    }, 1800);
   });
 });

@@ -105,7 +105,16 @@
         </select>
       </div>
 
-      <textarea id="quick-input" placeholder="Cole a avaliação do cliente ou o tema do post..."></textarea>
+      <div class="input-group" style="display: flex; gap: 6px;">
+        <select id="quick-tone" style="flex: 1; padding: 6px 8px; font-size: 11.5px; border-radius: 6px; background: #151c2c; color: #f0f4f8; border: 1px solid rgba(0, 210, 255, 0.25);">
+          <option value="profissional">💼 Tom Profissional</option>
+          <option value="persuasivo">🎯 Tom Persuasivo / Vendas</option>
+          <option value="amigavel">🤝 Tom Amigável</option>
+          <option value="direto">⚡ Tom Direto</option>
+        </select>
+      </div>
+
+      <textarea id="quick-input" placeholder="Cole a avaliação do cliente, tema do post ou instruções..."></textarea>
 
       <button class="primary-btn" id="btn-generate">
         <span>✨</span>
@@ -124,7 +133,7 @@
     <!-- Footer -->
     <footer class="footer">
       <a href="#" id="link-options">⚙️ Gestão de Empresas & Configurações</a>
-      <span class="version">v2.0.0 Pro</span>
+      <span class="version">v2.1.0 Pro</span>
     </footer>
   </div>
 

@@ -168,7 +168,31 @@
   let isPanelWide = false;
   let isPanelCollapsed = false;
   let isDarkTheme = false;
+  let isFloatingMode = false;
+  let isGlassMode = false;
+  let panelCustomWidth = 460;
+  let activeToneOfVoice = 'profissional';
   let customGeoGridConfig = { keyword: '', city: '', neighborhoods: null };
+
+  // Helper com feedback tátil ao copiar
+  async function copyToClipboardWithFeedback(btn, textToCopy) {
+    if (!textToCopy) return;
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      if (btn) {
+        const origText = btn.innerHTML;
+        btn.classList.add('livia-btn-copied');
+        btn.innerHTML = '✓ Copiado!';
+        setTimeout(() => {
+          btn.innerHTML = origText;
+          btn.classList.remove('livia-btn-copied');
+        }, 1800);
+      }
+      showToast('Copiado para a área de transferência! 📋');
+    } catch (e) {
+      showToast('Falha ao copiar.');
+    }
+  }
 
   // Abre o Painel Lateral de Operações e muda para a aba desejada
   function switchCommandCenterTab(tabId) {
@@ -179,8 +203,10 @@
       isPanelCollapsed = false;
       panel.classList.remove('livia-panel-collapsed');
       if (launcher) launcher.classList.remove('visible');
-      document.documentElement.classList.add('livia-split-active');
-      if (isPanelWide) document.documentElement.classList.add('livia-split-wide');
+      if (!isFloatingMode) {
+        document.documentElement.classList.add('livia-split-active');
+        document.body.style.marginRight = (panelCustomWidth || 460) + 'px';
+      }
     }
     renderCommandCenterContent(tabId);
   }
@@ -196,7 +222,7 @@
     // Cria o botão lateral discreto para quando o painel estiver recolhido
     const launcher = document.createElement('div');
     launcher.id = 'livia-panel-launcher';
-    launcher.title = 'Abrir Painel de Operações Lívia Copilot Pro';
+    launcher.title = 'Abrir Painel de Operações Lívia Copilot Pro (Alt + L)';
     launcher.innerHTML = `
       <span style="font-size: 18px;">✨</span>
       <span style="writing-mode: vertical-rl; text-orientation: mixed; font-weight: 800; font-size: 12px; letter-spacing: 0.5px;">ABRIR PAINEL LÍVIA</span>
@@ -211,13 +237,16 @@
     document.documentElement.classList.add('livia-split-active');
 
     panel.innerHTML = `
+      <div id="livia-cc-resize-handle" class="livia-cc-resize-handle" title="Arraste para redimensionar a largura do painel livremente (duplo clique: alternar padrão/amplo)">
+        <div class="livia-cc-resize-grip"></div>
+      </div>
       <div class="livia-cc-header">
         <div class="livia-cc-brand">
           <div class="livia-cc-brand-badge">✨</div>
           <div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="livia-cc-title">Lívia Copilot Pro</span>
-              <span class="livia-pro-pill">V2.0 PRO</span>
+              <span class="livia-pro-pill">V2.1 PRO</span>
             </div>
             <div class="livia-cc-subtitle">Central de Operações GMN • ConectWeb</div>
           </div>
@@ -226,10 +255,16 @@
           <button type="button" class="livia-cc-icon-btn" id="livia-cc-theme-btn" title="Alternar Tema Claro Executivo / Escuro Suave">
             🌙 Escuro
           </button>
-          <button type="button" class="livia-cc-icon-btn" id="livia-cc-wide-btn" title="Expandir largura do painel (Modo Amplo)">
+          <button type="button" class="livia-cc-icon-btn" id="livia-cc-mode-btn" title="Alternar entre Dividir Tela (Split) e Janela Flutuante (Overlay)">
+            📌 Dividir
+          </button>
+          <button type="button" class="livia-cc-icon-btn" id="livia-cc-opacity-btn" title="Alternar Opacidade do Painel (Sólido / Vidro Suave)">
+            🪟 Vidro
+          </button>
+          <button type="button" class="livia-cc-icon-btn" id="livia-cc-wide-btn" title="Alternar largura (460px / 620px)">
             ⤢ Amplo
           </button>
-          <button type="button" class="livia-cc-icon-btn" id="livia-cc-collapse-btn" title="Recolher painel para a lateral">
+          <button type="button" class="livia-cc-icon-btn" id="livia-cc-collapse-btn" title="Recolher painel para a lateral (Alt + L)">
             ✖
           </button>
         </div>
@@ -345,54 +380,198 @@
       renderCommandCenterContent(currentCommandTab);
     });
 
-    // Restaura preferência de tema (Claro Executivo por padrão)
-    chrome.storage.local.get(['liviaPanelTheme', 'liviaPanelWide'], (prefs) => {
+    const themeBtn = panel.querySelector('#livia-cc-theme-btn');
+    const modeBtn = panel.querySelector('#livia-cc-mode-btn');
+    const opacityBtn = panel.querySelector('#livia-cc-opacity-btn');
+    const wideBtn = panel.querySelector('#livia-cc-wide-btn');
+    const collapseBtn = panel.querySelector('#livia-cc-collapse-btn');
+    const resizeHandle = panel.querySelector('#livia-cc-resize-handle');
+
+    // Aplica layout conforme modo Dividir Tela vs Janela Flutuante
+    function applyPanelDisplayMode() {
+      if (isFloatingMode) {
+        panel.classList.add('livia-mode-floating');
+        document.documentElement.classList.remove('livia-split-active', 'livia-split-wide');
+        document.body.style.marginRight = '0px';
+        if (modeBtn) modeBtn.innerHTML = '🪟 Flutuante';
+      } else {
+        panel.classList.remove('livia-mode-floating');
+        if (!isPanelCollapsed) {
+          document.documentElement.classList.add('livia-split-active');
+          document.body.style.marginRight = (panelCustomWidth || 460) + 'px';
+        }
+        if (modeBtn) modeBtn.innerHTML = '📌 Dividir';
+      }
+    }
+
+    // Restaura preferências salvas no storage.local
+    chrome.storage.local.get([
+      'liviaPanelTheme',
+      'liviaPanelWide',
+      'liviaPanelCustomWidth',
+      'liviaPanelMode',
+      'liviaPanelGlass'
+    ], (prefs) => {
       if (prefs.liviaPanelTheme === 'dark') {
         isDarkTheme = true;
         panel.classList.add('livia-theme-dark');
-        panel.querySelector('#livia-cc-theme-btn').innerText = '☀️ Claro';
+        if (themeBtn) themeBtn.innerText = '☀️ Claro';
       }
-      if (prefs.liviaPanelWide) {
-        isPanelWide = true;
-        panel.classList.add('livia-panel-wide');
-        document.documentElement.classList.add('livia-split-wide');
-        panel.querySelector('#livia-cc-wide-btn').innerText = '⤡ Normal';
+      if (prefs.liviaPanelCustomWidth && Number(prefs.liviaPanelCustomWidth) >= 360) {
+        panelCustomWidth = Number(prefs.liviaPanelCustomWidth);
+        panel.style.width = panelCustomWidth + 'px';
+        document.documentElement.style.setProperty('--livia-panel-current-width', panelCustomWidth + 'px');
+      } else if (prefs.liviaPanelWide) {
+        panelCustomWidth = 620;
+        panel.style.width = '620px';
+        document.documentElement.style.setProperty('--livia-panel-current-width', '620px');
+      }
+
+      if (prefs.liviaPanelMode === 'floating') {
+        isFloatingMode = true;
+      } else {
+        isFloatingMode = false;
+      }
+      applyPanelDisplayMode();
+
+      if (prefs.liviaPanelGlass) {
+        isGlassMode = true;
+        panel.classList.add('livia-glass-active');
+        if (opacityBtn) opacityBtn.innerHTML = '🪟 Vidro';
       }
     });
 
-    // Botão Alternar Tema (Claro Executivo vs Escuro Suave)
-    panel.querySelector('#livia-cc-theme-btn').onclick = () => {
-      isDarkTheme = !isDarkTheme;
-      panel.classList.toggle('livia-theme-dark', isDarkTheme);
-      panel.querySelector('#livia-cc-theme-btn').innerText = isDarkTheme ? '☀️ Claro' : '🌙 Escuro';
-      chrome.storage.local.set({ liviaPanelTheme: isDarkTheme ? 'dark' : 'light' });
-    };
+    // --- 1. REDIMENSIONAMENTO LIVRE (DRAG TO RESIZE) ---
+    if (resizeHandle) {
+      let isResizing = false;
+      let startX = 0;
+      let startW = 460;
 
-    // Botão Modo Amplo (450px <-> 580px)
-    panel.querySelector('#livia-cc-wide-btn').onclick = () => {
-      isPanelWide = !isPanelWide;
-      panel.classList.toggle('livia-panel-wide', isPanelWide);
-      document.documentElement.classList.toggle('livia-split-wide', isPanelWide && !isPanelCollapsed);
-      panel.querySelector('#livia-cc-wide-btn').innerText = isPanelWide ? '⤡ Normal' : '⤢ Amplo';
-      chrome.storage.local.set({ liviaPanelWide: isPanelWide });
-    };
+      resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startW = panel.offsetWidth;
+        resizeHandle.classList.add('resizing');
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+      });
 
-    // Botão Minimizar / Recolher Painel
-    panel.querySelector('#livia-cc-collapse-btn').onclick = () => {
-      isPanelCollapsed = true;
-      panel.classList.add('livia-panel-collapsed');
-      launcher.classList.add('visible');
-      document.documentElement.classList.remove('livia-split-active', 'livia-split-wide');
-    };
+      window.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const dx = startX - e.clientX;
+        let newW = Math.round(startW + dx);
+        const maxW = Math.round(Math.min(window.innerWidth * 0.88, 1100));
+        newW = Math.max(360, Math.min(newW, maxW));
+
+        panelCustomWidth = newW;
+        panel.style.width = newW + 'px';
+        document.documentElement.style.setProperty('--livia-panel-current-width', newW + 'px');
+        if (!isFloatingMode && !isPanelCollapsed) {
+          document.body.style.marginRight = newW + 'px';
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!isResizing) return;
+        isResizing = false;
+        resizeHandle.classList.remove('resizing');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        chrome.storage.local.set({ liviaPanelCustomWidth: panelCustomWidth });
+      });
+
+      // Duplo clique na borda alterna entre tamanho padrão e expandido
+      resizeHandle.addEventListener('dblclick', () => {
+        const targetW = (panel.offsetWidth > 520) ? 460 : 640;
+        panelCustomWidth = targetW;
+        panel.style.width = targetW + 'px';
+        document.documentElement.style.setProperty('--livia-panel-current-width', targetW + 'px');
+        if (!isFloatingMode && !isPanelCollapsed) {
+          document.body.style.marginRight = targetW + 'px';
+        }
+        chrome.storage.local.set({ liviaPanelCustomWidth: targetW });
+        showToast(`Largura ajustada: ${targetW}px 📏`);
+      });
+    }
+
+    // --- 2. BOTÃO ALTERNAR TEMA (CLARO EXECUTIVO VS ESCURO SUAVE) ---
+    if (themeBtn) {
+      themeBtn.onclick = () => {
+        isDarkTheme = !isDarkTheme;
+        panel.classList.toggle('livia-theme-dark', isDarkTheme);
+        themeBtn.innerText = isDarkTheme ? '☀️ Claro' : '🌙 Escuro';
+        chrome.storage.local.set({ liviaPanelTheme: isDarkTheme ? 'dark' : 'light' });
+      };
+    }
+
+    // --- 3. BOTÃO ALTERNAR MODO (DIVIDIR TELA VS FLUTUANTE) ---
+    if (modeBtn) {
+      modeBtn.onclick = () => {
+        isFloatingMode = !isFloatingMode;
+        applyPanelDisplayMode();
+        chrome.storage.local.set({ liviaPanelMode: isFloatingMode ? 'floating' : 'split' });
+        showToast(isFloatingMode ? '🪟 Modo Flutuante Ativado (Google em tela total!)' : '📌 Modo Dividir Tela Ativado (Visualização lado a lado!)');
+      };
+    }
+
+    // --- 4. BOTÃO MODO VIDRO / TRANSLÚCIDO ---
+    if (opacityBtn) {
+      opacityBtn.onclick = () => {
+        isGlassMode = !isGlassMode;
+        panel.classList.toggle('livia-glass-active', isGlassMode);
+        opacityBtn.innerHTML = isGlassMode ? '🪟 Vidro' : '🧱 Sólido';
+        chrome.storage.local.set({ liviaPanelGlass: isGlassMode });
+        showToast(isGlassMode ? 'Efeito Vidro Translúcido Ativado ✨' : 'Painel Sólido Ativado 🧱');
+      };
+    }
+
+    // --- 5. BOTÃO MODO AMPLO (460px <-> 620px) ---
+    if (wideBtn) {
+      wideBtn.onclick = () => {
+        isPanelWide = !isPanelWide;
+        const targetW = isPanelWide ? 620 : 460;
+        panelCustomWidth = targetW;
+        panel.style.width = targetW + 'px';
+        document.documentElement.style.setProperty('--livia-panel-current-width', targetW + 'px');
+        if (!isFloatingMode && !isPanelCollapsed) {
+          document.body.style.marginRight = targetW + 'px';
+        }
+        wideBtn.innerText = isPanelWide ? '⤡ Normal' : '⤢ Amplo';
+        chrome.storage.local.set({ liviaPanelWide: isPanelWide, liviaPanelCustomWidth: targetW });
+      };
+    }
+
+    // --- 6. BOTÃO MINIMIZAR / RECOLHER PAINEL ---
+    if (collapseBtn) {
+      collapseBtn.onclick = () => {
+        isPanelCollapsed = true;
+        panel.classList.add('livia-panel-collapsed');
+        launcher.classList.add('visible');
+        document.documentElement.classList.remove('livia-split-active', 'livia-split-wide');
+        document.body.style.marginRight = '0px';
+      };
+    }
 
     launcher.onclick = () => {
       isPanelCollapsed = false;
       panel.classList.remove('livia-panel-collapsed');
       launcher.classList.remove('visible');
-      document.documentElement.classList.add('livia-split-active');
-      if (isPanelWide) document.documentElement.classList.add('livia-split-wide');
+      applyPanelDisplayMode();
       renderCommandCenterContent(currentCommandTab);
     };
+
+    // --- 7. ATALHO GLOBAL ALT + L PARA EXIBIR / OCULTAR O PAINEL RAPIDAMENTE ---
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && (e.key === 'l' || e.key === 'L')) {
+        e.preventDefault();
+        if (isPanelCollapsed) {
+          launcher.click();
+        } else if (collapseBtn) {
+          collapseBtn.click();
+        }
+      }
+    });
 
     // Botões de Criar Nova Ficha, Importar da Tela e Atualizar
     const createListingBtn = panel.querySelector('#livia-cc-create-listing');
@@ -5523,6 +5702,20 @@
             </button>
           </div>
 
+          <div class="livia-tone-selector-wrap">
+            <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--cc-text-muted);">🎯 Tom:</span>
+            <select class="livia-tone-select" id="livia-cc-post-tone">
+              <option value="profissional">💼 Profissional & Autoridade</option>
+              <option value="persuasivo">🎯 Persuasivo & Vendas / Promoção</option>
+              <option value="amigavel">🤝 Amigável & Acolhedor</option>
+              <option value="direto">⚡ Direto & Conciso</option>
+            </select>
+          </div>
+
+          <div class="livia-custom-prompt-wrap">
+            <input type="text" class="livia-custom-prompt-input" id="livia-cc-post-custom-guidance" placeholder="💡 Instrução adicional opcional (Ex: focar em entrega grátis, citar promoção...)">
+          </div>
+
           <div id="livia-cc-media-slot"></div>
 
           <div style="display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap;">
@@ -5544,7 +5737,7 @@
             <button type="button" class="livia-btn-inline livia-btn-auto" id="livia-cc-autopost-btn" style="flex: 1; padding: 9px 12px;">
               ⚡ Publicar no Google Sozinha (Texto + Foto)
             </button>
-            <button type="button" class="livia-btn-inline livia-btn-secondary" id="livia-cc-copy-post-btn" style="padding: 9px 12px;">
+            <button type="button" class="livia-btn-inline livia-btn-secondary" id="livia-cc-copy-post-btn" style="padding: 9px 12px;" title="Copiar texto do post">
               📋
             </button>
           </div>
@@ -5666,17 +5859,31 @@
       };
 
       body.querySelector('#livia-cc-gen-post-text').onclick = () => {
+        const toneSelect = body.querySelector('#livia-cc-post-tone');
+        const customGuide = body.querySelector('#livia-cc-post-custom-guidance');
+        const chosenTone = toneSelect ? toneSelect.value : 'profissional';
+        const guideText = customGuide ? customGuide.value.trim() : '';
+
         if (weeklyPosts.length > 0) {
           const pick = weeklyPosts[Math.floor(Math.random() * weeklyPosts.length)];
-          postTa.value = pick.caption;
-          showToast('✨ Legenda SEO gerada!');
+          let text = pick.caption;
+          if (guideText) {
+            text += `\n\n📌 *Destaque:* ${guideText}`;
+          }
+          if (chosenTone === 'direto') {
+            text = text.replace(/📍/g, '•').replace(/\n\n+/g, '\n');
+          } else if (chosenTone === 'persuasivo') {
+            text = `🔥 Oportunidade em ${effectiveBiz.city || 'sua região'}!\n\n` + text;
+          }
+          postTa.value = text;
+          showToast(`✨ Legenda gerada (${chosenTone})!`);
         }
       };
 
-      body.querySelector('#livia-cc-copy-post-btn').onclick = async () => {
-        await navigator.clipboard.writeText(postTa.value || '');
-        showToast('Texto do post copiado! 📋');
-      };
+      const copyPostBtn = body.querySelector('#livia-cc-copy-post-btn');
+      if (copyPostBtn) {
+        copyPostBtn.onclick = () => copyToClipboardWithFeedback(copyPostBtn, postTa.value || '');
+      }
 
       body.querySelector('#livia-cc-autopost-btn').onclick = async () => {
         let finalText = (postTa.value || '').trim();
@@ -5745,18 +5952,39 @@
         </div>
       `).join('');
 
+      const initPct = Math.min(100, Math.round((desc.length / 750) * 100));
+      const initGaugeColor = desc.length >= 600 && desc.length <= 750 ? '#059669' : desc.length > 750 ? '#dc2626' : '#d97706';
+
       body.innerHTML = `
         <div class="livia-cc-card">
           <div class="livia-cc-card-title">
             <span>✍️ Descrição SEO — ${effectiveBiz.name.slice(0, 22)}</span>
-            <span class="livia-char-counter good" id="livia-cc-desc-count">${desc.length}/750</span>
+            <span class="livia-char-counter ${desc.length >= 600 && desc.length <= 750 ? 'good' : desc.length > 750 ? 'danger' : 'warn'}" id="livia-cc-desc-count">${desc.length}/750</span>
           </div>
-          <textarea id="livia-cc-desc-ta" class="livia-cc-textarea" style="min-height: 125px; margin-bottom: 8px;">${desc}</textarea>
-          <div style="display: flex; gap: 6px;">
-            <button type="button" class="livia-btn-inline livia-btn-auto" id="livia-cc-autofill-desc" style="flex: 1; padding: 8px;">
-              ⚡ Auto-Preencher / Copiar
+
+          <div class="livia-tone-selector-wrap" style="margin-bottom: 6px;">
+            <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--cc-text-muted);">Estilo:</span>
+            <select class="livia-tone-select" id="livia-cc-desc-style">
+              <option value="completa">🏆 Completa com SEO & Bairros</option>
+              <option value="vendas">🎯 Focada em Conversão & WhatsApp</option>
+              <option value="institucional">🏛️ Institucional & Diferenciais</option>
+            </select>
+          </div>
+
+          <textarea id="livia-cc-desc-ta" class="livia-cc-textarea" style="min-height: 125px; margin-bottom: 4px;">${desc}</textarea>
+
+          <div class="livia-char-gauge">
+            <div class="livia-char-gauge-fill" id="livia-cc-desc-gauge-fill" style="width: ${initPct}%; background: ${initGaugeColor};"></div>
+          </div>
+
+          <div style="display: flex; gap: 6px; margin-top: 8px;">
+            <button type="button" class="livia-btn-inline livia-btn-auto" id="livia-cc-autofill-desc" style="flex: 1.2; padding: 8px;">
+              ⚡ Auto-Inserir no Google
             </button>
-            <button type="button" class="livia-btn-inline livia-btn-secondary" id="livia-cc-regen-desc" style="padding: 8px;">
+            <button type="button" class="livia-btn-inline livia-btn-secondary" id="livia-cc-copy-desc-btn" style="padding: 8px 12px;" title="Copiar descrição para área de transferência">
+              📋 Copiar
+            </button>
+            <button type="button" class="livia-btn-inline livia-btn-secondary" id="livia-cc-regen-desc" style="padding: 8px;" title="Gerar nova descrição com IA">
               🔄 Regerar
             </button>
           </div>
@@ -5779,15 +6007,39 @@
 
       const descTa = body.querySelector('#livia-cc-desc-ta');
       const descCount = body.querySelector('#livia-cc-desc-count');
-      descTa.oninput = () => {
-        descCount.innerText = `${descTa.value.length}/750`;
+      const gaugeFill = body.querySelector('#livia-cc-desc-gauge-fill');
+
+      const updateDescStats = () => {
+        const len = descTa.value.length;
+        descCount.innerText = `${len}/750`;
+        const pct = Math.min(100, Math.round((len / 750) * 100));
+        if (gaugeFill) {
+          gaugeFill.style.width = pct + '%';
+          if (len >= 600 && len <= 750) {
+            gaugeFill.style.background = '#059669';
+            descCount.className = 'livia-char-counter good';
+          } else if (len > 750) {
+            gaugeFill.style.background = '#dc2626';
+            descCount.className = 'livia-char-counter danger';
+          } else {
+            gaugeFill.style.background = '#d97706';
+            descCount.className = 'livia-char-counter warn';
+          }
+        }
       };
+
+      descTa.oninput = updateDescStats;
+
+      const copyDescBtn = body.querySelector('#livia-cc-copy-desc-btn');
+      if (copyDescBtn) {
+        copyDescBtn.onclick = () => copyToClipboardWithFeedback(copyDescBtn, descTa.value.trim());
+      }
 
       body.querySelector('#livia-cc-regen-desc').onclick = async () => {
         const r = await window.LiviaApi.generateBusinessDescription({ business: effectiveBiz });
         if (r && r.description) {
           descTa.value = r.description;
-          descCount.innerText = `${r.description.length}/750`;
+          updateDescStats();
           showToast(`Nova descrição gerada para ${effectiveBiz.name}! ✨`);
         }
       };
